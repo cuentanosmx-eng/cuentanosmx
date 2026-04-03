@@ -1,26 +1,26 @@
 /*
- ============================================
- CUENTANOS.MX - COMPLETE DESIGN SYSTEM
- Airbnb-style + Brand Colors
- ============================================
- 
- Brand Colors:
- - Verde oscuro: #00873E
- - Coral/Naranja: #FF6B35
- - Gris oscuro: #2D2D2D
- - Blanco: #FFFFFF
+  ============================================
+  CUENTANOS.MX - COMPLETE DESIGN SYSTEM
+  Airbnb-style + Brand Colors
+  ============================================
+  
+  Brand Colors (de tu paleta):
+  - Verde oscuro: #006633
+  - Coral/Naranja: #FF6633
+  - Gris oscuro: #4D4D4D
+  - Blanco: #FFFFFF
 */
 
 /* ========== CSS VARIABLES ========== */
 :root {
     /* Brand Colors */
-    --brand-green: #00873E;
-    --brand-green-dark: #006B30;
-    --brand-green-light: rgba(0, 135, 62, 0.1);
-    --brand-coral: #FF6B35;
-    --brand-coral-dark: #E55A28;
-    --brand-coral-light: rgba(255, 107, 53, 0.1);
-    --brand-gray: #2D2D2D;
+    --brand-green: #006633;
+    --brand-green-dark: #004D26;
+    --brand-green-light: rgba(0, 102, 51, 0.1);
+    --brand-coral: #FF6633;
+    --brand-coral-dark: #E65526;
+    --brand-coral-light: rgba(255, 102, 51, 0.1);
+    --brand-gray: #4D4D4D;
     --brand-white: #FFFFFF;
     
     /* Neutrals */
@@ -35,7 +35,7 @@
     --gray-800: #1A202C;
     
     /* Semantic */
-    --success: #00873E;
+    --success: #006633;
     --warning: #FFB400;
     --error: #E53E3E;
     --info: #3182CE;

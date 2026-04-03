@@ -3,19 +3,19 @@
    ============================================ */
 
 :root {
-    --cnmx-primary: #00873E;
-    --cnmx-primary-dark: #006B30;
-    --cnmx-primary-light: rgba(0, 135, 62, 0.1);
-    --cnmx-coral: #FF6B35;
-    --cnmx-coral-dark: #E55A28;
-    --cnmx-secondary: #2D2D2D;
-    --cnmx-success: #00873E;
+    --cnmx-primary: #006633;
+    --cnmx-primary-dark: #004D26;
+    --cnmx-primary-light: rgba(0, 102, 51, 0.1);
+    --cnmx-coral: #FF6633;
+    --cnmx-coral-dark: #E65526;
+    --cnmx-secondary: #4D4D4D;
+    --cnmx-success: #006633;
     --cnmx-warning: #FFB400;
-    --cnmx-error: #FF6B35;
+    --cnmx-error: #FF6633;
     --cnmx-surface: #FFFFFF;
     --cnmx-background: #F7F9FA;
     --cnmx-border: #E5E5E5;
-    --cnmx-text: #2D2D2D;
+    --cnmx-text: #4D4D4D;
     --cnmx-text-light: #717171;
     --cnmx-text-muted: #B0B0B0;
     --cnmx-radius-sm: 6px;
