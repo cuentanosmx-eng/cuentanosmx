@@ -21,14 +21,40 @@
 .site-content,
 .ast-container,
 .fl-builder-wrap,
-.elementor-page {
+.elementor-page,
+.ast-separate-container .ast-article-container,
+.ast-normal-container .ast-article-container,
+.ast-container-fluid,
+#page,
+.site,
+.site-header,
+.site-content {
     max-width: 100% !important;
+    width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
 }
 
+/* Full width body */
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Container full width */
+.container,
+.container-fluid {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
 /* ========== CSS VARIABLES ========== */
 :root {
+  /* Full width reset */
+  --max-width: 100%;
+  
   /* Colors - Airbnb Coral */
   --airbnb-coral: #FF5A5F;
   --airbnb-coral-dark: #E31C5F;
