@@ -199,9 +199,18 @@ input, select, textarea {
 .site,
 .site-header,
 .ast-desktop,
-.ast-header-break-point {
+.ast-header-break-point,
+.ast-container,
+.ast-container-fluid,
+#content,
+#page,
+div.ast-container {
     max-width: 100% !important;
     width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 
 /* Hero section full width */
@@ -209,6 +218,13 @@ input, select, textarea {
     width: 100vw;
     max-width: 100vw;
     margin-left: calc(-50vw + 50%);
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* All direct children of body full width */
+body > * {
+    max-width: 100% !important;
 }
 
 .section {
