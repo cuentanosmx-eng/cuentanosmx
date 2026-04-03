@@ -78,9 +78,6 @@ function Cuentanos_setup() {
     add_image_size('cnmx-card', 400, 300, true);
     add_image_size('cnmx-thumbnail', 150, 150, true);
     add_image_size('cnmx-gallery', 800, 600, true);
-    
-    // Hide admin bar for non-admins
-    add_filter('show_admin_bar', '__return_false');
 }
 add_action('after_setup_theme', 'Cuentanos_setup');
 
