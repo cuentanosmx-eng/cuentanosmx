@@ -3,6 +3,30 @@
    Minimalismo cálido + limpio
    ============================================ */
 
+/* ========== HIDE ASTRA DEFAULT ELEMENTS ========== */
+.site-header,
+.site-footer,
+.ast-header-wrap,
+.ast-header-break-point,
+.ast-mobile-header-wrap,
+#masthead,
+#colophon,
+.site-footer-wrap,
+.ast-footer-copyright,
+.ast-footer-overlay {
+    display: none !important;
+}
+
+/* Reset content area */
+.site-content,
+.ast-container,
+.fl-builder-wrap,
+.elementor-page {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 /* ========== CSS VARIABLES ========== */
 :root {
   /* Colors - Airbnb Coral */
