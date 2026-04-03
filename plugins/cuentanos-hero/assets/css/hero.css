@@ -1,0 +1,366 @@
+/**
+ * Cuentanos Hero Carousel - Estilos tipo Yelp
+ */
+
+:root {
+    --hero-primary: #EB510C;
+    --hero-secondary: #F89D2F;
+    --hero-dark: rgba(0,0,0,0.6);
+}
+
+/* ========== HERO CAROUSEL ========== */
+.cnmx-hero-carousel {
+    position: relative;
+    width: 100%;
+    height: 85vh;
+    min-height: 500px;
+    max-height: 800px;
+    overflow: hidden;
+    background: #000;
+}
+
+.cnmx-hero-slides {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.cnmx-hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+    z-index: 1;
+}
+
+.cnmx-hero-slide.active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 2;
+}
+
+.cnmx-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    animation: heroZoom 8s ease-out forwards;
+}
+
+@keyframes heroZoom {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.08);
+    }
+}
+
+.cnmx-hero-slide.active .cnmx-hero-bg {
+    animation: heroZoom 8s ease-out forwards;
+}
+
+.cnmx-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.3) 0%,
+        rgba(0,0,0,0.5) 50%,
+        rgba(0,0,0,0.7) 100%
+    );
+    z-index: 1;
+}
+
+.cnmx-hero-content {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px 20px;
+    text-align: center;
+    color: #fff;
+}
+
+.cnmx-hero-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    margin: 0 0 16px 0;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    max-width: 700px;
+    animation: heroSlideUp 0.8s ease-out 0.2s both;
+}
+
+.cnmx-hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 500;
+    margin: 0 0 32px 0;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    opacity: 0.95;
+    animation: heroSlideUp 0.8s ease-out 0.4s both;
+}
+
+.cnmx-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 36px;
+    background: var(--hero-primary);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: heroSlideUp 0.8s ease-out 0.6s both;
+    box-shadow: 0 4px 15px rgba(235, 81, 12, 0.4);
+}
+
+.cnmx-hero-btn:hover {
+    background: #C94409;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(235, 81, 12, 0.5);
+}
+
+.cnmx-hero-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes heroSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cnmx-hero-creditos {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    z-index: 4;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ========== NAVIGATION ========== */
+.cnmx-hero-nav {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+}
+
+.cnmx-hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.7);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.cnmx-hero-dot.active {
+    background: #fff;
+    transform: scale(1.2);
+}
+
+.cnmx-hero-dot:hover {
+    background: rgba(255,255,255,0.8);
+}
+
+/* ========== ARROWS ========== */
+.cnmx-hero-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cnmx-hero-arrow:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.cnmx-hero-prev {
+    left: 20px;
+}
+
+.cnmx-hero-next {
+    right: 20px;
+}
+
+/* ========== SEARCH BOX (integrado) ========== */
+.cnmx-hero-search {
+    margin-top: 40px;
+    animation: heroSlideUp 0.8s ease-out 0.8s both;
+}
+
+.cnmx-hero-search-form {
+    display: flex;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    max-width: 700px;
+    width: 100%;
+}
+
+.cnmx-hero-search-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    border-right: 1px solid #eee;
+}
+
+.cnmx-hero-search-field:last-child {
+    border-right: none;
+}
+
+.cnmx-hero-search-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.cnmx-hero-search-field input,
+.cnmx-hero-search-field select {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding: 8px 0;
+    background: transparent;
+    color: #333;
+}
+
+.cnmx-hero-search-field input::placeholder {
+    color: #ccc;
+}
+
+.cnmx-hero-search-btn {
+    background: var(--hero-primary);
+    color: #fff;
+    border: none;
+    padding: 0 28px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.cnmx-hero-search-btn:hover {
+    background: #C94409;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .cnmx-hero-carousel {
+        height: 70vh;
+        min-height: 400px;
+    }
+    
+    .cnmx-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .cnmx-hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .cnmx-hero-btn {
+        padding: 12px 28px;
+        font-size: 1rem;
+    }
+    
+    .cnmx-hero-search-form {
+        flex-direction: column;
+        border-radius: 16px;
+    }
+    
+    .cnmx-hero-search-field {
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 12px 16px;
+    }
+    
+    .cnmx-hero-search-field:last-child {
+        border-bottom: none;
+    }
+    
+    .cnmx-hero-search-btn {
+        padding: 16px;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .cnmx-hero-arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .cnmx-hero-prev {
+        left: 10px;
+    }
+    
+    .cnmx-hero-next {
+        right: 10px;
+    }
+    
+    .cnmx-hero-nav {
+        bottom: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cnmx-hero-carousel {
+        height: 60vh;
+    }
+    
+    .cnmx-hero-content {
+        padding: 20px;
+    }
+}

@@ -852,3 +852,90 @@ function cnmx_ajax_login() {
     
     wp_send_json_success('Sesión iniciada');
 }
+
+/**
+ * AJAX: Get Featured Businesses
+ */
+add_action('wp_ajax_cnmx_get_featured_businesses', 'cnmx_get_featured_businesses');
+add_action('wp_ajax_nopriv_cnmx_get_featured_businesses', 'cnmx_get_featured_businesses');
+
+function cnmx_get_featured_businesses() {
+    $negocios = get_posts(array(
+        'post_type' => 'negocio',
+        'post_status' => 'publish',
+        'posts_per_page' => 8,
+    ));
+    
+    $is_logged_in = is_user_logged_in();
+    $user_id = get_current_user_id();
+    
+    ob_start();
+    
+    if (!empty($negocios)):
+        foreach ($negocios as $biz):
+            $rating = get_post_meta($biz->ID, 'cnmx_rating', true) ?: 0;
+            $reviews = get_post_meta($biz->ID, 'cnmx_reviews_count', true) ?: 0;
+            $direccion = get_post_meta($biz->ID, 'cnmx_direccion', true) ?: '';
+            $imagen = get_the_post_thumbnail_url($biz->ID, 'cnmx-card') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop';
+            $cats = get_the_terms($biz->ID, 'categoria');
+            $categoria = $cats ? $cats[0]->name : 'General';
+            
+            $is_fav = false;
+            if ($is_logged_in) {
+                global $wpdb;
+                $fav = $wpdb->get_var($wpdb->prepare(
+                    "SELECT id FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d AND negocio_id = %d",
+                    $user_id, $biz->ID
+                ));
+                $is_fav = (bool)$fav;
+            }
+    ?>
+        <a href="<?php echo get_permalink($biz->ID); ?>" class="business-card" data-negocio-id="<?php echo $biz->ID; ?>">
+            <div class="business-card-img">
+                <img src="<?php echo esc_url($imagen); ?>" alt="<?php echo esc_attr($biz->post_title); ?>">
+                <button class="business-card-fav <?php echo $is_fav ? 'active' : ''; ?>" data-id="<?php echo $biz->ID; ?>">
+                    <svg viewBox="0 0 24 24" fill="<?php echo $is_fav ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="business-card-content">
+                <span class="business-card-cat"><?php echo esc_html($categoria); ?></span>
+                <h3 class="business-card-title"><?php echo esc_html($biz->post_title); ?></h3>
+                <div class="business-card-rating">
+                    <span class="business-card-stars">
+                        <?php for ($i = 0; $i < 5; $i++): ?>
+                            <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
+                        <?php endfor; ?>
+                    </span>
+                    <span class="business-card-rating-num"><?php echo number_format($rating, 1); ?></span>
+                    <span class="business-card-reviews">(<?php echo $reviews; ?>)</span>
+                </div>
+                <?php if ($direccion): ?>
+                <div class="business-card-location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span><?php echo esc_html($direccion); ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+        </a>
+    <?php 
+        endforeach;
+    else:
+    ?>
+        <div class="empty-state">
+            <div class="empty-state-icon">🏪</div>
+            <h3>No hay negocios aún</h3>
+            <p>¡Sé el primero en registrar un negocio!</p>
+        </div>
+    <?php
+    endif;
+    
+    $html = ob_get_clean();
+    
+    echo $html;
+    wp_die();
+}

@@ -1,7 +1,6 @@
 <?php
 /**
  * Front Page Template - Custom Home
- * Note: Includes its own header/footer, no get_header/get_footer needed
  */
 
 if (!defined('ABSPATH')) exit;
@@ -12,28 +11,18 @@ if (!defined('ABSPATH')) exit;
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="profile" href="https://gmpg.org/xfn/11">
     <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
 <?php
-// Get businesses
-$negocios = get_posts(array(
-    'post_type' => 'negocio',
-    'post_status' => 'publish',
-    'posts_per_page' => 8,
-));
-
-// Get categories
 $categories = get_terms(array(
     'taxonomy' => 'categoria',
     'hide_empty' => true,
-    'number' => 6,
+    'number' => 8,
 ));
 
-// Get user megafonos if logged in
 $user_megafonos = 0;
 if (is_user_logged_in()) {
     global $wpdb;
@@ -71,40 +60,35 @@ if (is_user_logged_in()) {
 </nav>
 
 <main>
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">Descubre los mejores lugares cerca de ti</h1>
-            <p class="hero-subtitle">Negocios locales recomendados por la comunidad</p>
-            
-            <!-- Search Box -->
-            <div class="search-box">
-                <form class="search-form" action="<?php echo home_url('/directorio'); ?>" method="GET">
-                    <div class="search-field">
-                        <label>¿Qué buscas?</label>
-                        <input type="text" name="q" placeholder="Restaurantes, cafés, hoteles...">
+    <!-- HERO CAROUSEL -->
+    <?php echo do_shortcode('[cnmx_hero]'); ?>
+    
+    <!-- Search Box debajo del hero -->
+    <section class="home-search-section">
+        <div class="container">
+            <div class="home-search-box">
+                <form class="home-search-form" action="<?php echo home_url('/directorio'); ?>" method="GET">
+                    <div class="home-search-field">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" name="q" placeholder="Buscar restaurantes, cafés, hoteles...">
                     </div>
-                    <div class="search-field">
-                        <label>Categoría</label>
+                    <div class="home-search-field">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
                         <select name="categoria">
-                            <option value="">Todas</option>
+                            <option value="">Todas las categorías</option>
                             <?php foreach ($categories as $cat): ?>
                                 <option value="<?php echo $cat->slug; ?>"><?php echo $cat->name; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" class="search-btn">Buscar</button>
+                    <button type="submit" class="home-search-btn">Buscar</button>
                 </form>
-            </div>
-            
-            <!-- Quick Categories -->
-            <div class="quick-cats">
-                <?php foreach ($categories as $cat): ?>
-                    <a href="<?php echo home_url('/directorio?categoria=' . $cat->slug); ?>" class="quick-cat">
-                        <span class="quick-cat-icon">📍</span>
-                        <span><?php echo $cat->name; ?></span>
-                    </a>
-                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -133,52 +117,9 @@ if (is_user_logged_in()) {
                 <a href="<?php echo home_url('/directorio'); ?>" class="section-link">Ver todos →</a>
             </div>
             
-            <div class="businesses-grid">
-                <?php if (!empty($negocios)): ?>
-                    <?php foreach ($negocios as $biz): 
-                        $rating = get_post_meta($biz->ID, 'cnmx_rating', true) ?: 0;
-                        $reviews = get_post_meta($biz->ID, 'cnmx_reviews_count', true) ?: 0;
-                        $direccion = get_post_meta($biz->ID, 'cnmx_direccion', true) ?: '';
-                        $imagen = get_the_post_thumbnail_url($biz->ID, 'cnmx-card') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop';
-                        $cats = get_the_terms($biz->ID, 'categoria');
-                        $categoria = $cats ? $cats[0]->name : 'General';
-                    ?>
-                        <a href="<?php echo get_permalink($biz->ID); ?>" class="business-card" data-negocio-id="<?php echo $biz->ID; ?>">
-                            <div class="business-card-img">
-                                <img src="<?php echo $imagen; ?>" alt="<?php echo esc_attr($biz->post_title); ?>">
-                                <button class="business-card-fav" data-id="<?php echo $biz->ID; ?>">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="business-card-content">
-                                <span class="business-card-cat"><?php echo esc_html($categoria); ?></span>
-                                <h3 class="business-card-title"><?php echo esc_html($biz->post_title); ?></h3>
-                                <div class="business-card-rating">
-                                    <span class="business-card-stars">
-                                        <?php for ($i = 0; $i < 5; $i++): ?>
-                                            <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
-                                        <?php endfor; ?>
-                                    </span>
-                                    <span class="business-card-rating-num"><?php echo number_format($rating, 1); ?></span>
-                                    <span class="business-card-reviews">(<?php echo $reviews; ?>)</span>
-                                </div>
-                                <?php if ($direccion): ?>
-                                <div class="business-card-location">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                        <circle cx="12" cy="10" r="3"/>
-                                    </svg>
-                                    <span><?php echo esc_html($direccion); ?></span>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="no-businesses">Aún no hay negocios registrados. <a href="<?php echo home_url('/registrar-negocio'); ?>">Registra el primero</a></p>
-                <?php endif; ?>
+            <div class="businesses-grid" id="businesses-grid">
+                <!-- Cargado via AJAX -->
+                <div class="loading-spinner">Cargando...</div>
             </div>
         </div>
     </section>
@@ -234,6 +175,125 @@ if (is_user_logged_in()) {
         </div>
     </div>
 </footer>
+
+<style>
+/* Home Search Section */
+.home-search-section {
+    margin-top: -50px;
+    position: relative;
+    z-index: 100;
+    margin-bottom: 60px;
+}
+
+.home-search-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.home-search-form {
+    display: flex;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.home-search-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-right: 1px solid #eee;
+}
+
+.home-search-field:last-of-type {
+    border-right: none;
+}
+
+.home-search-field svg {
+    color: #999;
+    flex-shrink: 0;
+}
+
+.home-search-field input,
+.home-search-field select {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    background: transparent;
+    color: #333;
+}
+
+.home-search-field input::placeholder {
+    color: #ccc;
+}
+
+.home-search-btn {
+    background: #EB510C;
+    color: #fff;
+    border: none;
+    padding: 0 32px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.home-search-btn:hover {
+    background: #C94409;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+    .home-search-section {
+        margin-top: 0;
+        padding: 0 16px;
+    }
+    
+    .home-search-form {
+        flex-direction: column;
+    }
+    
+    .home-search-field {
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 14px 16px;
+    }
+    
+    .home-search-field:last-of-type {
+        border-bottom: none;
+    }
+    
+    .home-search-btn {
+        padding: 16px;
+        margin-top: 8px;
+        border-radius: 8px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load businesses via AJAX
+    fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_get_featured_businesses')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('businesses-grid').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('businesses-grid').innerHTML = '<p class="loading-spinner">Error al cargar negocios</p>';
+        });
+});
+</script>
 
 <?php wp_footer(); ?>
 </body>
