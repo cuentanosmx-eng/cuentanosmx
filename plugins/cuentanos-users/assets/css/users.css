@@ -3,27 +3,30 @@
    ============================================ */
 
 :root {
-    --cnmx-primary: #FF4D4D;
-    --cnmx-primary-dark: #E63939;
-    --cnmx-secondary: #2D3436;
-    --cnmx-success: #00C853;
-    --cnmx-warning: #FFD700;
-    --cnmx-error: #FF5252;
+    --cnmx-primary: #00873E;
+    --cnmx-primary-dark: #006B30;
+    --cnmx-primary-light: rgba(0, 135, 62, 0.1);
+    --cnmx-coral: #FF6B35;
+    --cnmx-coral-dark: #E55A28;
+    --cnmx-secondary: #2D2D2D;
+    --cnmx-success: #00873E;
+    --cnmx-warning: #FFB400;
+    --cnmx-error: #FF6B35;
     --cnmx-surface: #FFFFFF;
-    --cnmx-background: #F8F9FA;
-    --cnmx-border: #E0E0E0;
-    --cnmx-text: #2D3436;
-    --cnmx-text-light: #636E72;
-    --cnmx-text-muted: #B2BEC3;
-    --cnmx-radius-sm: 8px;
-    --cnmx-radius-md: 12px;
+    --cnmx-background: #F7F9FA;
+    --cnmx-border: #E5E5E5;
+    --cnmx-text: #2D2D2D;
+    --cnmx-text-light: #717171;
+    --cnmx-text-muted: #B0B0B0;
+    --cnmx-radius-sm: 6px;
+    --cnmx-radius-md: 10px;
     --cnmx-radius-lg: 16px;
     --cnmx-radius-xl: 24px;
     --cnmx-shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-    --cnmx-shadow-md: 0 4px 16px rgba(0,0,0,0.12);
-    --cnmx-shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
-    --cnmx-transition: all 0.3s ease;
-    --cnmx-transition-fast: all 0.2s ease;
+    --cnmx-shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --cnmx-shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --cnmx-transition: all 0.2s ease;
+    --cnmx-transition-fast: all 0.15s ease;
 }
 
 body {

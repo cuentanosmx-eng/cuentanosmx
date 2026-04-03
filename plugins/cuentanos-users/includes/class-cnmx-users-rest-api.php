@@ -7,75 +7,74 @@ if (!defined('ABSPATH')) exit;
 
 class CNMX_Users_REST_API {
     
+    private $namespace = 'cuentanos/v1';
+    
     public function __construct() {
         add_action('rest_api_init', [$this, 'register_routes']);
     }
     
     public function register_routes() {
-        // Auth routes are now handled by class-cnmx-complete-api.php
-        // This file provides helper methods and user-specific endpoints
-        
-        register_rest_route('cnmx/v1', '/auth/register', [
+        register_rest_route($this->namespace, '/auth/register', [
             'methods' => 'POST',
             'callback' => [$this, 'register_user'],
             'permission_callback' => '__return_true',
         ]);
         
-        register_rest_route('cnmx/v1', '/auth/login', [
+        register_rest_route($this->namespace, '/auth/login', [
             'methods' => 'POST',
             'callback' => [$this, 'login_user'],
             'permission_callback' => '__return_true',
         ]);
         
-        register_rest_route('cnmx/v1', '/usuario/perfil', [
+        register_rest_route($this->namespace, '/usuario/perfil', [
             'methods' => 'GET',
             'callback' => [$this, 'get_profile'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/usuario/perfil', [
+        register_rest_route($this->namespace, '/usuario/perfil', [
             'methods' => 'POST',
             'callback' => [$this, 'update_profile'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/favoritos', [
+        register_rest_route($this->namespace, '/favoritos', [
             'methods' => 'GET',
             'callback' => [$this, 'get_favoritos'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/usuario/megafonos', [
+        register_rest_route($this->namespace, '/usuario/megafonos', [
             'methods' => 'GET',
             'callback' => [$this, 'get_megafonos'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/usuario/logros', [
+        register_rest_route($this->namespace, '/usuario/logros', [
             'methods' => 'GET',
             'callback' => [$this, 'get_logros'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/recompensas', [
+        register_rest_route($this->namespace, '/recompensas', [
             'methods' => 'GET',
             'callback' => [$this, 'get_recompensas'],
             'permission_callback' => '__return_true',
         ]);
         
-        register_rest_route('cnmx/v1', '/recompensas/canjear', [
+        register_rest_route($this->namespace, '/recompensas/canjear', [
             'methods' => 'POST',
             'callback' => [$this, 'canjear_recompensa'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/recompensas/mis', [
+        register_rest_route($this->namespace, '/recompensas/mis', [
             'methods' => 'GET',
             'callback' => [$this, 'get_canjeadas'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
-        register_rest_route('cnmx/v1', '/usuario/negocio', [
+        register_rest_route($this->namespace, '/usuario/negocio', [
             'methods' => 'GET',
             'callback' => [$this, 'get_negocio_usuario'],
             'permission_callback' => [$this, 'check_auth'],

@@ -1,14 +1,15 @@
 /*
- Theme Name:   Cuentanos MX (Child Theme de Astra)
+ Theme Name:   Cuentanos
  Theme URI:    https://cuentanos.mx
- Description:  Directorio de negocios estilo Airbnb - Child Theme de Astra
- Author:       Cuentanos MX
+ Description:   Tema personalizado para Cuentanos.mx - Directorio de negocios con gamificacion Megafonos
+ Author:       Cuentanos Team
  Author URI:   https://cuentanos.mx
  Template:     astra
- Version:      2.0.1
+ Version:      1.0.0
  License:      GNU General Public License v2 or later
  License URI:  http://www.gnu.org/licenses/gpl-2.0.html
- Text Domain:  Cuentanos-MX
+ Text Domain:  cuentos
+ Tags:         business, directory, reviews, ratings
 */
 
-/* Additional CSS is loaded via functions.php */
+/* Main styles are in css/main.css */

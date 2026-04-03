@@ -40,7 +40,7 @@ class CNMX_Users_Setup {
         wp_enqueue_script('cnmx-users-js', CNMX_USERS_URL . 'assets/js/users.js', ['jquery'], CNMX_USERS_VERSION, true);
         
         wp_localize_script('cnmx-users-js', 'cnmxUsersData', [
-            'apiUrl' => rest_url('cnmx/v1'),
+            'apiUrl' => rest_url('cuentanos/v1'),
             'nonce' => wp_create_nonce('wp_rest'),
             'isLoggedIn' => is_user_logged_in(),
             'userId' => get_current_user_id(),

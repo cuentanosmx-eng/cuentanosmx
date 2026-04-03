@@ -5,123 +5,132 @@
 (function($) {
     'use strict';
     
-    // Initialize when DOM is ready
     $(document).ready(function() {
         initNavbar();
         initFavorites();
         initReviews();
         initSearch();
+        initForms();
     });
     
     // Navbar scroll effect
     function initNavbar() {
-        const navbar = $('.navbar');
-        if (!navbar.length) return;
+        const $navbar = $('.navbar');
+        if (!$navbar.length) return;
         
         $(window).scroll(function() {
             if ($(this).scrollTop() > 50) {
-                navbar.addClass('scrolled');
+                $navbar.addClass('scrolled');
             } else {
-                navbar.removeClass('scrolled');
+                $navbar.removeClass('scrolled');
             }
         });
     }
     
     // Favorites toggle
     function initFavorites() {
-        $('.business-card-fav, .action-btn-fav').on('click', function(e) {
+        $(document).on('click', '.btn-favorito, .business-card-fav', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
             const $btn = $(this);
-            const negocioId = $btn.data('id') || $btn.closest('[data-id]').data('id');
+            const negocioId = $btn.data('id') || $btn.closest('[data-negocio-id]').data('negocio-id');
             
-            $btn.toggleClass('active');
+            if (!cnmxData.isLoggedIn) {
+                showToast('error', 'Inicia sesión', 'Debes iniciar sesión para guardar favoritos');
+                return;
+            }
             
-            if (typeof cnmxData !== 'undefined') {
-                $.ajax({
-                    url: cnmxData.apiUrl + '/favorito',
-                    method: 'POST',
-                    headers: {
-                        'X-WP-Nonce': cnmxData.nonce
-                    },
-                    data: {
-                        negocio_id: negocioId
-                    },
-                    success: function(response) {
-                        if (response.success) {
+            $.ajax({
+                url: cnmxData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'cnmx_favorito',
+                    negocio_id: negocioId,
+                    nonce: cnmxData.nonce
+                },
+                beforeSend: function() {
+                    $btn.addClass('loading');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $btn.toggleClass('active');
+                        if (response.data.action === 'added') {
                             showToast('success', 'Guardado', 'Añadido a favoritos');
                         } else {
                             showToast('success', 'Eliminado', 'Eliminado de favoritos');
                         }
                     }
-                });
-            }
+                },
+                error: function() {
+                    showToast('error', 'Error', 'No se pudo procesar la solicitud');
+                }
+            });
         });
     }
     
     // Reviews functionality
     function initReviews() {
-        const $form = $('#review-form');
-        const $btnWrite = $('#btn-write-review');
+        // Show review form
+        $(document).on('click', '#btn-write-review', function() {
+            $('#review-form').slideToggle();
+        });
         
-        if ($btnWrite.length && $form.length) {
-            $btnWrite.on('click', function() {
-                $form.slideToggle();
-            });
-        }
-        
-        // Star rating input
-        $('.star-btn').on('click', function() {
+        // Star rating
+        $(document).on('click', '.star-btn', function() {
             const rating = $(this).data('rating');
-            $(this).closest('.rating-input').find('.star-btn').each(function(i) {
+            const $container = $(this).closest('.rating-input');
+            
+            $container.find('.star-btn').each(function(i) {
+                const $star = $(this);
                 if (i < rating) {
-                    $(this).addClass('active').find('svg').attr('fill', 'currentColor');
+                    $star.addClass('active').find('svg').attr('fill', 'currentColor');
                 } else {
-                    $(this).removeClass('active').find('svg').attr('fill', 'none');
+                    $star.removeClass('active').find('svg').attr('fill', 'none');
                 }
             });
-            $(this).closest('.rating-input').data('selected-rating', rating);
+            
+            $container.data('rating', rating);
         });
         
         // Submit review
-        $('#btn-submit-review').on('click', function() {
+        $(document).on('click', '#btn-submit-review', function() {
             const negocioId = $(this).data('negocio');
-            const rating = $('.rating-input').data('selected-rating') || 0;
+            const rating = $('.rating-input').data('rating') || 0;
             const contenido = $('#review-text').val();
             
             if (rating === 0) {
-                alert('Por favor selecciona una calificación');
+                showToast('error', 'Error', 'Selecciona una calificación');
                 return;
             }
             
             if (!contenido.trim()) {
-                alert('Por favor escribe tu reseña');
+                showToast('error', 'Error', 'Escribe tu reseña');
                 return;
             }
             
-            if (typeof cnmxData !== 'undefined') {
-                $.ajax({
-                    url: cnmxData.apiUrl + '/resena',
-                    method: 'POST',
-                    headers: {
-                        'X-WP-Nonce': cnmxData.nonce
-                    },
-                    data: {
-                        negocio_id: negocioId,
-                        calificacion: rating,
-                        contenido: contenido
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            showToast('success', '¡Gracias!', 'Tu reseña ha sido enviada');
-                            $('#review-text').val('');
-                            $('.rating-input .star-btn svg').attr('fill', 'none');
-                            $form.slideUp();
-                        }
-                    }
-                });
-            }
+            $.ajax({
+                url: cnmxData.restUrl + 'cnmx/v1/resena',
+                type: 'POST',
+                data: {
+                    negocio_id: negocioId,
+                    calificacion: rating,
+                    contenido: contenido
+                },
+                headers: {
+                    'X-WP-Nonce': cnmxData.nonce
+                },
+                success: function() {
+                    showToast('success', '¡Gracias!', 'Tu reseña ha sido enviada');
+                    $('#review-text').val('');
+                    $('.rating-input .star-btn svg').attr('fill', 'none');
+                    $('#review-form').slideUp();
+                    location.reload();
+                },
+                error: function() {
+                    showToast('error', 'Error', 'No se pudo enviar la reseña');
+                }
+            });
         });
     }
     
@@ -134,15 +143,84 @@
                 const query = $(this).val().toLowerCase();
                 
                 $('.cnmx-negocio-card').each(function() {
-                    const title = $(this).data('title') || '';
+                    const $card = $(this);
+                    const title = $card.data('title') || '';
+                    
                     if (title.toLowerCase().includes(query)) {
-                        $(this).show();
+                        $card.show();
                     } else {
-                        $(this).hide();
+                        $card.hide();
                     }
                 });
             }, 300));
         }
+    }
+    
+    // Form handling
+    function initForms() {
+        // Registration form
+        $(document).on('submit', '#cnmx-register-form', function(e) {
+            e.preventDefault();
+            
+            const $form = $(this);
+            const $btn = $form.find('button[type="submit"]');
+            
+            $.ajax({
+                url: cnmxData.ajaxUrl,
+                type: 'POST',
+                data: $form.serialize() + '&action=cnmx_register&nonce=' + cnmxData.nonce,
+                beforeSend: function() {
+                    $btn.prop('disabled', true).text('Creando cuenta...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', '¡Listo!', 'Cuenta creada exitosamente');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast('error', 'Error', response.data);
+                        $btn.prop('disabled', false).text('Crear cuenta');
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Error', 'No se pudo crear la cuenta');
+                    $btn.prop('disabled', false).text('Crear cuenta');
+                }
+            });
+        });
+        
+        // Login form
+        $(document).on('submit', '#cnmx-login-form', function(e) {
+            e.preventDefault();
+            
+            const $form = $(this);
+            const $btn = $form.find('button[type="submit"]');
+            
+            $.ajax({
+                url: cnmxData.ajaxUrl,
+                type: 'POST',
+                data: $form.serialize() + '&action=cnmx_login&nonce=' + cnmxData.nonce,
+                beforeSend: function() {
+                    $btn.prop('disabled', true).text('Iniciando sesión...');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', '¡Bienvenido!', 'Sesión iniciada');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showToast('error', 'Error', response.data);
+                        $btn.prop('disabled', false).text('Iniciar sesión');
+                    }
+                },
+                error: function() {
+                    showToast('error', 'Error', 'Credenciales incorrectas');
+                    $btn.prop('disabled', false).text('Iniciar sesión');
+                }
+            });
+        });
     }
     
     // Toast notification
@@ -152,15 +230,13 @@
             $('body').append('<div class="toast-container"></div>');
         }
         
-        const $toast = $(`
-            <div class="toast ${type}">
-                <div class="toast-icon">${type === 'success' ? '✓' : '!'}</div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-            </div>
-        `);
+        const $toast = $('<div class="toast ' + type + '">' +
+            '<span class="toast-icon">' + (type === 'success' ? '✓' : '!') + '</span>' +
+            '<div class="toast-content">' +
+                '<div class="toast-title">' + title + '</div>' +
+                '<div class="toast-message">' + message + '</div>' +
+            '</div>' +
+        '</div>');
         
         $('.toast-container').append($toast);
         
@@ -168,7 +244,7 @@
             $toast.addClass('out');
             setTimeout(function() {
                 $toast.remove();
-            }, 400);
+            }, 300);
         }, 3000);
     }
     
