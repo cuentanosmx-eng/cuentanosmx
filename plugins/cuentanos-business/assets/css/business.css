@@ -1,0 +1,592 @@
+/* CNMX Business - Dashboard Styles */
+
+.cnmx-dashboard-page {
+    padding: 40px 0;
+    min-height: calc(100vh - 200px);
+}
+
+.cnmx-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.cnmx-dashboard-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cnmx-text);
+}
+
+/* Stats Cards */
+.cnmx-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 1024px) {
+    .cnmx-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .cnmx-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cnmx-stat-card {
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-lg);
+    padding: 24px;
+    box-shadow: var(--cnmx-shadow-sm);
+    transition: all var(--cnmx-transition);
+}
+
+.cnmx-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--cnmx-shadow-md);
+}
+
+.cnmx-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+.cnmx-stat-icon.visitas {
+    background: rgba(255, 77, 77, 0.1);
+    color: var(--cnmx-primary);
+}
+
+.cnmx-stat-icon.resenas {
+    background: rgba(255, 179, 0, 0.1);
+    color: var(--cnmx-warning);
+}
+
+.cnmx-stat-icon.favoritos {
+    background: rgba(0, 200, 83, 0.1);
+    color: var(--cnmx-success);
+}
+
+.cnmx-stat-icon.rating {
+    background: rgba(138, 43, 226, 0.1);
+    color: #8A2BE2;
+}
+
+.cnmx-stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--cnmx-text);
+    margin-bottom: 4px;
+}
+
+.cnmx-stat-label {
+    font-size: 14px;
+    color: var(--cnmx-text-light);
+}
+
+/* Membership Card */
+.cnmx-membership-card {
+    background: linear-gradient(135deg, var(--cnmx-primary) 0%, #FF6B6B 100%);
+    border-radius: var(--cnmx-radius-xl);
+    padding: 32px;
+    color: white;
+    margin-bottom: 32px;
+}
+
+.cnmx-membership-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.cnmx-membership-plan {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.cnmx-membership-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.2);
+}
+
+.cnmx-membership-status.activa {
+    background: var(--cnmx-success);
+}
+
+.cnmx-membership-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.cnmx-membership-item {
+    text-align: center;
+}
+
+.cnmx-membership-item-value {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.cnmx-membership-item-label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.cnmx-membership-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.cnmx-membership-actions .btn {
+    flex: 1;
+}
+
+/* Plans Grid */
+.cnmx-plans-section {
+    margin-top: 40px;
+}
+
+.cnmx-plans-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.cnmx-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .cnmx-plans-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.cnmx-plan-card {
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-lg);
+    padding: 24px;
+    border: 2px solid var(--cnmx-border);
+    transition: all var(--cnmx-transition);
+}
+
+.cnmx-plan-card:hover {
+    border-color: var(--cnmx-primary);
+}
+
+.cnmx-plan-card.actual {
+    border-color: var(--cnmx-primary);
+    background: rgba(255, 77, 77, 0.05);
+}
+
+.cnmx-plan-nombre {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.cnmx-plan-precio {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--cnmx-primary);
+    margin-bottom: 16px;
+}
+
+.cnmx-plan-precio span {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--cnmx-text-light);
+}
+
+.cnmx-plan-caracteristicas {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.cnmx-plan-caracteristicas li {
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--cnmx-text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cnmx-plan-caracteristicas li::before {
+    content: '✓';
+    color: var(--cnmx-success);
+    font-weight: 700;
+}
+
+.cnmx-plan-btn {
+    width: 100%;
+}
+
+/* Recent Reviews */
+.cnmx-reviews-section {
+    margin-top: 32px;
+}
+
+.cnmx-reviews-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.cnmx-review-item {
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-md);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--cnmx-shadow-sm);
+}
+
+.cnmx-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.cnmx-review-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cnmx-review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cnmx-primary), #FF6B6B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.cnmx-review-name {
+    font-weight: 600;
+}
+
+.cnmx-review-date {
+    font-size: 12px;
+    color: var(--cnmx-text-muted);
+}
+
+.cnmx-review-stars {
+    color: var(--cnmx-warning);
+}
+
+.cnmx-review-content {
+    color: var(--cnmx-text-light);
+    line-height: 1.6;
+}
+
+/* Loading State */
+.cnmx-dashboard-loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.cnmx-dashboard-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--cnmx-border);
+    border-top-color: var(--cnmx-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+/* Edit Page */
+.cnmx-edit-negocio-page {
+    padding: 40px 0;
+    min-height: calc(100vh - 200px);
+}
+
+.cnmx-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.cnmx-edit-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.cnmx-edit-form {
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-xl);
+    padding: 32px;
+    box-shadow: var(--cnmx-shadow-sm);
+}
+
+.cnmx-edit-form .cnmx-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.cnmx-edit-form .cnmx-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.cnmx-edit-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--cnmx-border);
+}
+
+.cnmx-edit-actions .btn {
+    flex: 1;
+}
+
+/* Preview Link */
+.cnmx-preview-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--cnmx-background);
+    border-radius: var(--cnmx-radius-md);
+    color: var(--cnmx-text);
+    font-weight: 500;
+    margin-bottom: 24px;
+    transition: all var(--cnmx-transition);
+}
+
+.cnmx-preview-link:hover {
+    background: var(--cnmx-primary);
+    color: white;
+}
+
+.cnmx-preview-link svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Logros Section */
+.cnmx-logros-section {
+    margin-top: 32px;
+}
+
+.cnmx-logros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.cnmx-logro-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-md);
+    border: 2px solid var(--cnmx-border);
+    transition: all var(--cnmx-transition);
+}
+
+.cnmx-logro-card.obtenido {
+    border-color: var(--cnmx-success);
+    background: rgba(0, 200, 83, 0.05);
+}
+
+.cnmx-logro-icon {
+    font-size: 32px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cnmx-background);
+    border-radius: 12px;
+}
+
+.cnmx-logro-info {
+    flex: 1;
+}
+
+.cnmx-logro-nombre {
+    font-weight: 600;
+    color: var(--cnmx-text);
+    margin-bottom: 4px;
+}
+
+.cnmx-logro-megafonos {
+    font-size: 14px;
+    color: var(--cnmx-primary);
+    font-weight: 600;
+}
+
+/* Recompensas Section */
+.cnmx-recompensas-section {
+    margin-top: 32px;
+}
+
+.cnmx-recompensas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.cnmx-megafonos-display {
+    text-align: center;
+    background: linear-gradient(135deg, var(--cnmx-primary) 0%, #FF6B6B 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: var(--cnmx-radius-lg);
+}
+
+.cnmx-megafonos-num {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.cnmx-megafonos-label {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.cnmx-recompensas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.cnmx-recompensa-card {
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-lg);
+    overflow: hidden;
+    border: 2px solid var(--cnmx-border);
+    transition: all var(--cnmx-transition);
+}
+
+.cnmx-recompensa-card.disponible:hover {
+    border-color: var(--cnmx-primary);
+    transform: translateY(-4px);
+    box-shadow: var(--cnmx-shadow-md);
+}
+
+.cnmx-recompensa-card.bloqueada {
+    opacity: 0.6;
+}
+
+.cnmx-recompensa-img {
+    height: 140px;
+    background: var(--cnmx-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+}
+
+.cnmx-recompensa-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cnmx-recompensa-info {
+    padding: 16px;
+    text-align: center;
+}
+
+.cnmx-recompensa-nombre {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.cnmx-recompensa-precio {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--cnmx-primary);
+    margin-bottom: 16px;
+}
+
+.cnmx-recompensa-btn {
+    width: 100%;
+}
+
+.cnmx-recompensa-btn:disabled {
+    background: var(--cnmx-border);
+    color: var(--cnmx-text-muted);
+    cursor: not-allowed;
+}
+
+/* Recompensas Canjeadas */
+.cnmx-canjeadas-list {
+    display: grid;
+    gap: 12px;
+}
+
+.cnmx-canjeada-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--cnmx-surface);
+    border-radius: var(--cnmx-radius-md);
+    border: 1px solid var(--cnmx-border);
+}
+
+.cnmx-canjeada-codigo code {
+    background: var(--cnmx-background);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--cnmx-primary);
+}
+
+.cnmx-canjeada-fecha {
+    font-size: 12px;
+    color: var(--cnmx-text-muted);
+}
+
+.cnmx-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cnmx-recompensas-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .cnmx-logros-grid,
+    .cnmx-recompensas-grid {
+        grid-template-columns: 1fr;
+    }
+}

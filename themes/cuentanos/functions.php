@@ -6,7 +6,7 @@
 // Exit if accessed directly
 if (!defined('ABSPATH')) exit;
 
-define('CNMX_VERSION', '2.0.1');
+define('CNMX_VERSION', '2.0.2');
 define('CNMX_PATH', get_stylesheet_directory());
 define('CNMX_URL', get_stylesheet_directory_uri());
 
@@ -23,10 +23,10 @@ function Cuentanos_enqueue_styles() {
         $parent_version
     );
     
-    // Custom CSS - Airbnb Style
+    // Custom CSS - Airbnb Style (correct path)
     wp_enqueue_style(
         'cnmx-main',
-        CNMX_URL . '/assets/css/main.css',
+        CNMX_URL . '/css/main.css',
         array('astra-theme'),
         CNMX_VERSION
     );
@@ -34,7 +34,7 @@ function Cuentanos_enqueue_styles() {
     // Animations CSS
     wp_enqueue_style(
         'cnmx-animations',
-        CNMX_URL . '/assets/css/animations.css',
+        CNMX_URL . '/css/animations.css',
         array('cnmx-main'),
         CNMX_VERSION
     );
@@ -48,7 +48,7 @@ function Cuentanos_enqueue_scripts() {
     // Main App JS
     wp_enqueue_script(
         'cnmx-app',
-        CNMX_URL . '/assets/js/app.js',
+        CNMX_URL . '/js/app.js',
         array('jquery'),
         CNMX_VERSION,
         true

@@ -1,0 +1,188 @@
+/* ============================================
+   CNMX Admin Styles
+   ============================================ */
+
+.cnmx-admin-wrap {
+    max-width: 1400px;
+    padding: 20px;
+}
+
+.cnmx-admin-wrap h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.cnmx-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.cnmx-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.cnmx-stat-card.pending {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border-left: 4px solid #FF9800;
+}
+
+.cnmx-stat-icon {
+    font-size: 36px;
+}
+
+.cnmx-stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2D3436;
+}
+
+.cnmx-stat-label {
+    color: #636E72;
+    font-size: 14px;
+}
+
+.cnmx-dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .cnmx-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cnmx-dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.cnmx-dashboard-card h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.cnmx-quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cnmx-quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #F8F9FA;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #2D3436;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.cnmx-quick-action:hover {
+    background: #FF4D4D;
+    color: white;
+}
+
+.cnmx-qa-icon {
+    font-size: 24px;
+}
+
+.cnmx-admin-toolbar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.cnmx-admin-toolbar form {
+    display: flex;
+    gap: 12px;
+}
+
+.cnmx-admin-toolbar select,
+.cnmx-admin-toolbar input {
+    padding: 8px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+}
+
+.cnmx-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.cnmx-status-badge.status-publish {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.cnmx-status-badge.status-pending {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.cnmx-status-badge.status-draft {
+    background: #ECEFF1;
+    color: #546E7A;
+}
+
+.cnmx-megafonos-badge {
+    background: linear-gradient(135deg, #FF4D4D 0%, #FF6B6B 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.cnmx-metrica-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.cnmx-metrica-card h3 {
+    font-size: 14px;
+    color: #636E72;
+    margin-bottom: 8px;
+}
+
+.cnmx-metrica-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #FF4D4D;
+}
+
+.cnmx-metricas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .cnmx-metricas-grid {
+        grid-template-columns: 1fr;
+    }
+}
