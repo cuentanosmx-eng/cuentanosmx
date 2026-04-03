@@ -14,6 +14,9 @@ define('CNMX_URL', get_stylesheet_directory_uri());
  * Enqueue Scripts and Styles
  */
 function cnmx_enqueue_scripts() {
+    // Check if Elementor is editing
+    $is_elementor = isset($_GET['elementor']) || (did_action('elementor/loaded') && \Elementor\Plugin::instance()->preview->is_preview_mode());
+    
     // Google Fonts - Inter
     wp_enqueue_style(
         'cnmx-google-fonts',
@@ -22,64 +25,67 @@ function cnmx_enqueue_scripts() {
         null
     );
     
-    // Parent theme CSS (Astra)
-    $parent_version = wp_get_theme('astra')->get('Version');
-    wp_enqueue_style(
-        'astra-theme',
-        get_template_directory_uri() . '/style.css',
-        array(),
-        $parent_version
-    );
-    
-    // Custom CSS
-    wp_enqueue_style(
-        'cnmx-main',
-        CNMX_URL . '/css/main.css',
-        array('astra-theme'),
-        CNMX_VERSION
-    );
-    
-    // Leaflet CSS
-    wp_enqueue_style(
-        'leaflet-css',
-        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-        array(),
-        '1.9.4'
-    );
-    
-    // Leaflet JS
-    wp_enqueue_script(
-        'leaflet-js',
-        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-        array(),
-        '1.9.4',
-        true
-    );
-    
-    // Main JS
-    wp_enqueue_script(
-        'cnmx-app',
-        CNMX_URL . '/js/app.js',
-        array('jquery'),
-        CNMX_VERSION,
-        true
-    );
-    
-    // Localize data for AJAX
-    wp_localize_script('cnmx-app', 'cnmxData', array(
-        'ajaxUrl' => admin_url('admin-ajax.php'),
-        'restUrl' => rest_url(),
-        'nonce' => wp_create_nonce('cnmx_nonce'),
-        'userId' => get_current_user_id(),
-        'isLoggedIn' => is_user_logged_in(),
-        'homeUrl' => home_url(),
-        'strings' => array(
-            'loading' => 'Cargando...',
-            'error' => 'Algo salió mal',
-            'saved' => 'Guardado',
-            'megafonos' => 'Megáfonos',
-        )
-    ));
+    // Only load theme styles if NOT in Elementor editor mode
+    if (!$is_elementor) {
+        // Parent theme CSS (Astra)
+        $parent_version = wp_get_theme('astra')->get('Version');
+        wp_enqueue_style(
+            'astra-theme',
+            get_template_directory_uri() . '/style.css',
+            array(),
+            $parent_version
+        );
+        
+        // Custom CSS
+        wp_enqueue_style(
+            'cnmx-main',
+            CNMX_URL . '/css/main.css',
+            array('astra-theme'),
+            CNMX_VERSION
+        );
+        
+        // Leaflet CSS
+        wp_enqueue_style(
+            'leaflet-css',
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+            array(),
+            '1.9.4'
+        );
+        
+        // Leaflet JS
+        wp_enqueue_script(
+            'leaflet-js',
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+            array(),
+            '1.9.4',
+            true
+        );
+        
+        // Main JS
+        wp_enqueue_script(
+            'cnmx-app',
+            CNMX_URL . '/js/app.js',
+            array('jquery'),
+            CNMX_VERSION,
+            true
+        );
+        
+        // Localize data for AJAX
+        wp_localize_script('cnmx-app', 'cnmxData', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'restUrl' => rest_url(),
+            'nonce' => wp_create_nonce('cnmx_nonce'),
+            'userId' => get_current_user_id(),
+            'isLoggedIn' => is_user_logged_in(),
+            'homeUrl' => home_url(),
+            'strings' => array(
+                'loading' => 'Cargando...',
+                'error' => 'Algo salió mal',
+                'saved' => 'Guardado',
+                'megafonos' => 'Megáfonos',
+            )
+        ));
+    }
 }
 add_action('wp_enqueue_scripts', 'cnmx_enqueue_scripts', 20);
 
@@ -110,8 +116,46 @@ function cnmx_setup() {
         'mobile' => 'Menú Móvil',
         'footer' => 'Menú Footer',
     ));
+    
+    // Elementor support
+    add_theme_support('elementor');
+    
+    // Wide images
+    add_theme_support('align-wide');
+    
+    // Editor styles
+    add_theme_support('editor-styles');
+    
+    // Responsive embeds
+    add_theme_support('responsive-embeds');
 }
 add_action('after_setup_theme', 'cnmx_setup');
+
+/**
+ * Elementor Compatibility
+ */
+function cnmx_elementor_support() {
+    // Check if Elementor is active
+    if (did_action('elementor/loaded')) {
+        add_action('elementor/frontend/before_register_scripts', function() {
+            // Our scripts already loaded in main enqueue
+        });
+    }
+}
+add_action('init', 'cnmx_elementor_support');
+
+/**
+ * Disable Astra header/footer when using Elementor templates
+ */
+function cnmx_disable_astra_header_footer($is_available) {
+    if (is_singular() && defined('ELEMENTOR_VERSION')) {
+        $elementor_yes = get_post_meta(get_the_ID(), '_elementor_edit_mode', true);
+        if ($elementor_yes === 'builder') {
+            return false;
+        }
+    }
+    return $is_available;
+}
 
 /**
  * Register Custom Post Types
