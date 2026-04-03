@@ -3,16 +3,16 @@
    ============================================ */
 
 :root {
-    --cnmx-primary: #006633;
-    --cnmx-primary-dark: #004D26;
-    --cnmx-primary-light: rgba(0, 102, 51, 0.1);
-    --cnmx-coral: #FF6633;
-    --cnmx-coral-dark: #E65526;
+    --cnmx-primary: #EB510C;
+    --cnmx-primary-dark: #C94409;
+    --cnmx-primary-light: rgba(235, 81, 12, 0.1);
+    --cnmx-coral: #F89D2F;
+    --cnmx-coral-dark: #D88A26;
     --cnmx-secondary: #4D4D4D;
-    --cnmx-success: #006633;
-    --cnmx-warning: #FFB400;
-    --cnmx-error: #FF6633;
-    --cnmx-surface: #FFFFFF;
+    --cnmx-success: #EB510C;
+    --cnmx-warning: #F89D2F;
+    --cnmx-error: #EB510C;
+    --cnmx-surface: #FFFCF8;
     --cnmx-background: #F7F9FA;
     --cnmx-border: #E5E5E5;
     --cnmx-text: #4D4D4D;

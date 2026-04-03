@@ -14,14 +14,14 @@
 /* ========== CSS VARIABLES ========== */
 :root {
     /* Brand Colors */
-    --brand-green: #006633;
-    --brand-green-dark: #004D26;
-    --brand-green-light: rgba(0, 102, 51, 0.1);
-    --brand-coral: #FF6633;
-    --brand-coral-dark: #E65526;
-    --brand-coral-light: rgba(255, 102, 51, 0.1);
+    --brand-green: #EB510C;
+    --brand-green-dark: #C94409;
+    --brand-green-light: rgba(235, 81, 12, 0.1);
+    --brand-coral: #F89D2F;
+    --brand-coral-dark: #D88A26;
+    --brand-coral-light: rgba(248, 157, 47, 0.1);
     --brand-gray: #4D4D4D;
-    --brand-white: #FFFFFF;
+    --brand-white: #FFFCF8;
     
     /* Neutrals */
     --gray-50: #F7F9FA;
@@ -35,8 +35,8 @@
     --gray-800: #1A202C;
     
     /* Semantic */
-    --success: #006633;
-    --warning: #FFB400;
+    --success: #EB510C;
+    --warning: #F89D2F;
     --error: #E53E3E;
     --info: #3182CE;
     
