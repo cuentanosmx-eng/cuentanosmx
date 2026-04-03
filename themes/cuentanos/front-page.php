@@ -1,10 +1,24 @@
 <?php
 /**
  * Front Page Template - Custom Home
+ * Note: Includes its own header/footer, no get_header/get_footer needed
  */
 
-get_header();
+if (!defined('ABSPATH')) exit;
+?>
 
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="profile" href="https://gmpg.org/xfn/11">
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
+
+<?php
 // Get businesses
 $negocios = get_posts(array(
     'post_type' => 'negocio',
@@ -120,47 +134,51 @@ if (is_user_logged_in()) {
             </div>
             
             <div class="businesses-grid">
-                <?php foreach ($negocios as $biz): 
-                    $rating = get_post_meta($biz->ID, 'cnmx_rating', true) ?: 0;
-                    $reviews = get_post_meta($biz->ID, 'cnmx_reviews_count', true) ?: 0;
-                    $direccion = get_post_meta($biz->ID, 'cnmx_direccion', true) ?: '';
-                    $imagen = get_the_post_thumbnail_url($biz->ID, 'cnmx-card') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop';
-                    $cats = get_the_terms($biz->ID, 'categoria');
-                    $categoria = $cats ? $cats[0]->name : 'General';
-                ?>
-                    <a href="<?php echo get_permalink($biz->ID); ?>" class="business-card" data-negocio-id="<?php echo $biz->ID; ?>">
-                        <div class="business-card-img">
-                            <img src="<?php echo $imagen; ?>" alt="<?php echo $biz->post_title; ?>">
-                            <button class="business-card-fav" data-id="<?php echo $biz->ID; ?>">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="business-card-content">
-                            <span class="business-card-cat"><?php echo $categoria; ?></span>
-                            <h3 class="business-card-title"><?php echo $biz->post_title; ?></h3>
-                            <div class="business-card-rating">
-                                <span class="business-card-stars">
-                                    <?php for ($i = 0; $i < 5; $i++): ?>
-                                        <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
-                                    <?php endfor; ?>
-                                </span>
-                                <span class="business-card-rating-num"><?php echo number_format($rating, 1); ?></span>
-                                <span class="business-card-reviews">(<?php echo $reviews; ?>)</span>
+                <?php if (!empty($negocios)): ?>
+                    <?php foreach ($negocios as $biz): 
+                        $rating = get_post_meta($biz->ID, 'cnmx_rating', true) ?: 0;
+                        $reviews = get_post_meta($biz->ID, 'cnmx_reviews_count', true) ?: 0;
+                        $direccion = get_post_meta($biz->ID, 'cnmx_direccion', true) ?: '';
+                        $imagen = get_the_post_thumbnail_url($biz->ID, 'cnmx-card') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop';
+                        $cats = get_the_terms($biz->ID, 'categoria');
+                        $categoria = $cats ? $cats[0]->name : 'General';
+                    ?>
+                        <a href="<?php echo get_permalink($biz->ID); ?>" class="business-card" data-negocio-id="<?php echo $biz->ID; ?>">
+                            <div class="business-card-img">
+                                <img src="<?php echo $imagen; ?>" alt="<?php echo esc_attr($biz->post_title); ?>">
+                                <button class="business-card-fav" data-id="<?php echo $biz->ID; ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <?php if ($direccion): ?>
-                            <div class="business-card-location">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                <span><?php echo $direccion; ?></span>
+                            <div class="business-card-content">
+                                <span class="business-card-cat"><?php echo esc_html($categoria); ?></span>
+                                <h3 class="business-card-title"><?php echo esc_html($biz->post_title); ?></h3>
+                                <div class="business-card-rating">
+                                    <span class="business-card-stars">
+                                        <?php for ($i = 0; $i < 5; $i++): ?>
+                                            <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
+                                        <?php endfor; ?>
+                                    </span>
+                                    <span class="business-card-rating-num"><?php echo number_format($rating, 1); ?></span>
+                                    <span class="business-card-reviews">(<?php echo $reviews; ?>)</span>
+                                </div>
+                                <?php if ($direccion): ?>
+                                <div class="business-card-location">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    <span><?php echo esc_html($direccion); ?></span>
+                                </div>
+                                <?php endif; ?>
                             </div>
-                            <?php endif; ?>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="no-businesses">Aún no hay negocios registrados. <a href="<?php echo home_url('/registrar-negocio'); ?>">Registra el primero</a></p>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -202,7 +220,7 @@ if (is_user_logged_in()) {
             <div class="footer-col">
                 <h4>Negocios</h4>
                 <a href="<?php echo home_url('/registrar-negocio'); ?>">Registrar negocio</a>
-                <a href="<?php echo home_url('/login-negocio'); ?>">Acceso negocios</a>
+                <a href="<?php echo home_url('/dashboard-empresa'); ?>">Acceso negocios</a>
             </div>
             <div class="footer-col">
                 <h4>Cuenta</h4>
@@ -217,4 +235,6 @@ if (is_user_logged_in()) {
     </div>
 </footer>
 
-<?php get_footer(); ?>
+<?php wp_footer(); ?>
+</body>
+</html>

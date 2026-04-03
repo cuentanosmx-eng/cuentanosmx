@@ -3,13 +3,23 @@
  * Archive Negocio Template - Listado de negocios (directorio)
  */
 
-get_header();
+if (!defined('ABSPATH')) exit;
+?>
 
-// Get query params
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
+
+<?php
 $categoria = isset($_GET['categoria']) ? sanitize_text_field($_GET['categoria']) : '';
 $busqueda = isset($_GET['q']) ? sanitize_text_field($_GET['q']) : '';
 
-// Build query
 $args = array(
     'post_type' => 'negocio',
     'post_status' => 'publish',
@@ -17,13 +27,7 @@ $args = array(
 );
 
 if ($categoria) {
-    $args['tax_query'] = array(
-        array(
-            'taxonomy' => 'categoria',
-            'field' => 'slug',
-            'terms' => $categoria,
-        )
-    );
+    $args['tax_query'] = array(array('taxonomy' => 'categoria', 'field' => 'slug', 'terms' => $categoria));
 }
 
 if ($busqueda) {
@@ -32,13 +36,8 @@ if ($busqueda) {
 
 $negocios = new WP_Query($args);
 
-// Get categories
-$categories = get_terms(array(
-    'taxonomy' => 'categoria',
-    'hide_empty' => true,
-));
+$categories = get_terms(array('taxonomy' => 'categoria', 'hide_empty' => true));
 
-// Get user megafonos
 $user_megafonos = 0;
 if (is_user_logged_in()) {
     global $wpdb;
@@ -173,18 +172,14 @@ if (is_user_logged_in()) {
                     <?php endwhile; ?>
                 </div>
                 
-                <?php 
-                // Pagination
-                $total_pages = $negocios->max_num_pages;
-                if ($total_pages > 1):
-                ?>
+                <?php if ($negocios->max_num_pages > 1): ?>
                     <div class="pagination">
                         <?php
                         echo paginate_links(array(
                             'base' => add_query_arg('paged', '%#%'),
                             'format' => '?paged=%#%',
                             'current' => max(1, get_query_var('paged')),
-                            'total' => $total_pages,
+                            'total' => $negocios->max_num_pages,
                             'prev_text' => '&laquo; Anterior',
                             'next_text' => 'Siguiente &raquo;',
                         ));
@@ -208,7 +203,7 @@ if (is_user_logged_in()) {
         <div class="container">
             <div class="cta-content">
                 <h2>¿Tienes un negocio?</h2>
-                <p>Llega a miles de clientes locales y mostra lo mejor de tu empresa</p>
+                <p>Llega a miles de clientes locales y muestra lo mejor de tu empresa</p>
                 <a href="<?php echo home_url('/registrar-negocio'); ?>" class="btn btn-white btn-lg">Registrar mi negocio</a>
             </div>
         </div>
@@ -249,58 +244,18 @@ if (is_user_logged_in()) {
 </footer>
 
 <style>
-.results-count {
-    font-size: var(--font-size-base);
-    font-weight: 400;
-    color: var(--gray-500);
-    margin-left: var(--space-sm);
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-2xl);
-}
-
-.pagination a,
-.pagination span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 16px;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: var(--transition);
-}
-
-.pagination a {
-    background: var(--brand-white);
-    border: 1px solid var(--gray-200);
-}
-
-.pagination a:hover {
-    border-color: var(--brand-green);
-    color: var(--brand-green);
-}
-
-.pagination .current {
-    background: var(--brand-green);
-    color: var(--brand-white);
-}
-
-@media (max-width: 768px) {
-    .directory-search {
-        flex-direction: column;
-    }
-    
-    .search-field {
-        width: 100%;
-    }
-}
+.results-count{font-size:var(--font-size-base);font-weight:400;color:var(--gray-500);margin-left:var(--space-sm)}
+.pagination{display:flex;justify-content:center;gap:var(--space-sm);margin-top:var(--space-2xl)}
+.pagination a,.pagination span{display:flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:var(--radius-md);font-weight:500;transition:var(--transition)}
+.pagination a{background:var(--brand-white);border:1px solid var(--gray-200)}
+.pagination a:hover{border-color:var(--brand-green);color:var(--brand-green)}
+.pagination .current{background:var(--brand-green);color:var(--brand-white)}
+@media(max-width:768px){.directory-search{flex-direction:column}.search-field{width:100%}}
 </style>
 
 <?php 
 wp_reset_postdata();
-get_footer(); 
+wp_footer();
 ?>
+</body>
+</html>

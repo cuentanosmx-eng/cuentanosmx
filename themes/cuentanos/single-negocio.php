@@ -3,8 +3,20 @@
  * Single Negocio Template - Pagina individual de negocio
  */
 
-get_header();
+if (!defined('ABSPATH')) exit;
+?>
 
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
+
+<?php
 // Get negocio data
 $negocio_id = get_the_ID();
 $rating = get_post_meta($negocio_id, 'cnmx_rating', true) ?: 0;
@@ -14,15 +26,7 @@ $telefono = get_post_meta($negocio_id, 'cnmx_telefono', true) ?: '';
 $whatsapp = get_post_meta($negocio_id, 'cnmx_whatsapp', true) ?: '';
 $email = get_post_meta($negocio_id, 'cnmx_email', true) ?: '';
 $sitio_web = get_post_meta($negocio_id, 'cnmx_sitio_web', true) ?: '';
-$horarios = get_post_meta($negocio_id, 'cnmx_horarios', true) ?: json_encode(array(
-    'lunes' => '9:00 - 21:00',
-    'martes' => '9:00 - 21:00',
-    'miercoles' => '9:00 - 21:00',
-    'jueves' => '9:00 - 21:00',
-    'viernes' => '9:00 - 21:00',
-    'sabado' => '10:00 - 22:00',
-    'domingo' => 'Cerrado',
-));
+$horarios = get_post_meta($negocio_id, 'cnmx_horarios', true);
 
 if (is_string($horarios)) {
     $horarios = json_decode($horarios, true) ?: array();
@@ -30,11 +34,8 @@ if (is_string($horarios)) {
 
 $cats = get_the_terms($negocio_id, 'categoria');
 $categoria = $cats ? $cats[0]->name : 'General';
-$categoria_slug = $cats ? $cats[0]->slug : '';
-
 $imagen_principal = get_the_post_thumbnail_url($negocio_id, 'full') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=1200&h=600&fit=crop';
 
-// Get user data if logged in
 $user_megafonos = 0;
 $is_favorite = false;
 if (is_user_logged_in()) {
@@ -53,8 +54,6 @@ if (is_user_logged_in()) {
     $is_favorite = (bool)$fav;
 }
 
-// Get reviews
-global $wpdb;
 $resenas = $wpdb->get_results($wpdb->prepare(
     "SELECT r.*, u.display_name as user_name 
      FROM {$wpdb->prefix}cnmx_resenas r 
@@ -93,7 +92,7 @@ $resenas = $wpdb->get_results($wpdb->prepare(
 <main>
     <!-- HERO IMAGE -->
     <section class="single-hero">
-        <img src="<?php echo esc_url($imagen_principal); ?>" alt="<?php the_title(); ?>" class="single-hero-img">
+        <img src="<?php echo esc_url($imagen_principal); ?>" alt="<?php the_title_attribute(); ?>" class="single-hero-img">
         <div class="single-hero-overlay">
             <div class="container">
                 <span class="single-hero-cat"><?php echo esc_html($categoria); ?></span>
@@ -125,41 +124,24 @@ $resenas = $wpdb->get_results($wpdb->prepare(
             
             <?php if ($telefono): ?>
                 <a href="tel:<?php echo esc_attr($telefono); ?>" class="action-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     <span><?php echo esc_html($telefono); ?></span>
                 </a>
             <?php endif; ?>
             
             <?php if ($whatsapp): ?>
                 <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank" class="action-btn action-btn-whatsapp">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     <span>WhatsApp</span>
                 </a>
             <?php endif; ?>
             
             <?php if ($sitio_web): ?>
                 <a href="<?php echo esc_url($sitio_web); ?>" target="_blank" class="action-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="2" y1="12" x2="22" y2="12"/>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                     <span>Sitio Web</span>
                 </a>
             <?php endif; ?>
-            
-            <button class="action-btn" onclick="window.print()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <polyline points="6 9 6 2 18 2 18 9"/>
-                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                    <rect x="6" y="14" width="12" height="8"/>
-                </svg>
-                <span>Imprimir</span>
-            </button>
         </div>
     </section>
 
@@ -167,17 +149,12 @@ $resenas = $wpdb->get_results($wpdb->prepare(
     <section class="section">
         <div class="container">
             <div class="single-content">
-                <!-- Left Column -->
                 <div class="single-main">
-                    <!-- About -->
                     <div class="single-section">
                         <h2 class="single-section-title">Acerca de <?php the_title(); ?></h2>
-                        <div class="single-description">
-                            <?php the_content(); ?>
-                        </div>
+                        <div class="single-description"><?php the_content(); ?></div>
                     </div>
                     
-                    <!-- Reviews -->
                     <div class="single-section">
                         <div class="section-header">
                             <h2 class="single-section-title">Reseñas</h2>
@@ -193,9 +170,7 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                             <div class="rating-input" data-rating="0">
                                 <?php for ($i = 1; $i <= 5; $i++): ?>
                                     <button class="star-btn" data-rating="<?php echo $i; ?>">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                        </svg>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                     </button>
                                 <?php endfor; ?>
                             </div>
@@ -215,14 +190,10 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                                 <?php foreach ($resenas as $resena): ?>
                                     <div class="review-item">
                                         <div class="review-header">
-                                            <div class="review-avatar">
-                                                <?php echo substr($resena->user_name, 0, 1); ?>
-                                            </div>
+                                            <div class="review-avatar"><?php echo substr($resena->user_name, 0, 1); ?></div>
                                             <div class="review-info">
                                                 <span class="review-name"><?php echo esc_html($resena->user_name); ?></span>
-                                                <span class="review-meta">
-                                                    <?php echo date('d M Y', strtotime($resena->fecha)); ?>
-                                                </span>
+                                                <span class="review-meta"><?php echo date('d M Y', strtotime($resena->fecha)); ?></span>
                                             </div>
                                             <div class="review-stars">
                                                 <?php for ($i = 0; $i < 5; $i++): ?>
@@ -238,18 +209,13 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                     </div>
                 </div>
                 
-                <!-- Right Column - Sidebar -->
                 <aside class="single-sidebar">
-                    <!-- Map -->
                     <div class="sidebar-card">
                         <h3 class="sidebar-card-title">Ubicación</h3>
-                        <?php if ($direccion): ?>
-                            <p class="sidebar-address"><?php echo esc_html($direccion); ?></p>
-                        <?php endif; ?>
+                        <?php if ($direccion): ?><p class="sidebar-address"><?php echo esc_html($direccion); ?></p><?php endif; ?>
                         <div id="map" class="map-container"></div>
                     </div>
                     
-                    <!-- Hours -->
                     <div class="sidebar-card">
                         <h3 class="sidebar-card-title">Horario</h3>
                         <div class="hours-list">
@@ -257,9 +223,8 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                             $dias_semana = array('lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo');
                             $dias_labels = array('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo');
                             $dia_actual = strtolower(date('l'));
-                            
                             foreach ($dias_semana as $i => $dia):
-                                $horario = isset($horarios[$dia]) ? $horarios[$dia] : '9:00 - 18:00';
+                                $horario = $horarios[$dia] ?? '9:00 - 18:00';
                                 $es_hoy = ($dia === $dia_actual);
                             ?>
                                 <div class="hours-row <?php echo $es_hoy ? 'today' : ''; ?>">
@@ -270,40 +235,11 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                         </div>
                     </div>
                     
-                    <!-- Contact -->
                     <div class="sidebar-card">
                         <h3 class="sidebar-card-title">Contacto</h3>
-                        <?php if ($telefono): ?>
-                            <div class="contact-item">
-                                <strong>Teléfono:</strong>
-                                <a href="tel:<?php echo esc_attr($telefono); ?>"><?php echo esc_html($telefono); ?></a>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($whatsapp): ?>
-                            <div class="contact-item">
-                                <strong>WhatsApp:</strong>
-                                <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank"><?php echo esc_html($whatsapp); ?></a>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($email): ?>
-                            <div class="contact-item">
-                                <strong>Email:</strong>
-                                <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <!-- Share -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-card-title">Compartir</h3>
-                        <div class="share-buttons">
-                            <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode(get_permalink()); ?>" target="_blank" class="share-btn facebook">
-                                Facebook
-                            </a>
-                            <a href="https://twitter.com/intent/tweet?url=<?php echo urlencode(get_permalink()); ?>&text=<?php echo urlencode(get_the_title()); ?>" target="_blank" class="share-btn twitter">
-                                Twitter
-                            </a>
-                        </div>
+                        <?php if ($telefono): ?><div class="contact-item"><strong>Teléfono:</strong><a href="tel:<?php echo esc_attr($telefono); ?>"><?php echo esc_html($telefono); ?></a></div><?php endif; ?>
+                        <?php if ($whatsapp): ?><div class="contact-item"><strong>WhatsApp:</strong><a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank"><?php echo esc_html($whatsapp); ?></a></div><?php endif; ?>
+                        <?php if ($email): ?><div class="contact-item"><strong>Email:</strong><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></div><?php endif; ?>
                     </div>
                 </aside>
             </div>
@@ -317,9 +253,7 @@ $resenas = $wpdb->get_results($wpdb->prepare(
         <div class="footer-content">
             <div class="footer-brand">
                 <a href="<?php echo home_url(); ?>" class="footer-logo">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
                     Cuentanos.mx
                 </a>
                 <p>Descubre los mejores negocios locales en México.</p>
@@ -345,198 +279,42 @@ $resenas = $wpdb->get_results($wpdb->prepare(
 </footer>
 
 <style>
-.single-content {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 48px;
-}
-
-.single-section {
-    background: var(--brand-white);
-    border-radius: var(--radius-lg);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
-}
-
-.single-section-title {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    margin-bottom: var(--space-lg);
-}
-
-.single-description {
-    line-height: 1.8;
-    color: var(--gray-600);
-}
-
-.sidebar-card {
-    background: var(--brand-white);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
-    box-shadow: var(--shadow-sm);
-}
-
-.sidebar-card-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    margin-bottom: var(--space-md);
-    color: var(--gray-800);
-}
-
-.sidebar-address {
-    color: var(--gray-600);
-    margin-bottom: var(--space-md);
-}
-
-.hours-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.hours-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.hours-row.today {
-    background: var(--brand-green-light);
-    margin: 0 -16px;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-}
-
-.hours-day {
-    color: var(--gray-600);
-}
-
-.hours-time {
-    color: var(--gray-800);
-}
-
-.contact-item {
-    margin-bottom: 12px;
-}
-
-.contact-item strong {
-    display: block;
-    font-size: var(--font-size-sm);
-    color: var(--gray-500);
-}
-
-.contact-item a {
-    color: var(--brand-coral);
-    font-weight: 500;
-}
-
-.review-form {
-    background: var(--gray-50);
-    padding: var(--space-lg);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--space-xl);
-}
-
-.rating-input {
-    display: flex;
-    gap: 8px;
-    margin-bottom: var(--space-md);
-}
-
-.star-btn {
-    cursor: pointer;
-    color: var(--gray-300);
-    transition: var(--transition);
-}
-
-.star-btn:hover,
-.star-btn.active {
-    color: var(--warning);
-}
-
-.review-form .form-textarea {
-    margin-bottom: var(--space-md);
-}
-
-.review-item {
-    padding: var(--space-lg) 0;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.review-item:last-child {
-    border-bottom: none;
-}
-
-.review-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-sm);
-}
-
-.share-buttons {
-    display: flex;
-    gap: var(--space-sm);
-}
-
-.share-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border-radius: var(--radius-md);
-    text-align: center;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: white;
-    transition: var(--transition);
-}
-
-.share-btn.facebook {
-    background: #1877F2;
-}
-
-.share-btn.twitter {
-    background: #1DA1F2;
-}
-
-.share-btn:hover {
-    opacity: 0.9;
-    color: white;
-}
-
-@media (max-width: 900px) {
-    .single-content {
-        grid-template-columns: 1fr;
-    }
-    
-    .single-sidebar {
-        order: -1;
-    }
-}
+.single-content{display:grid;grid-template-columns:1fr 350px;gap:48px}
+.single-section{background:var(--brand-white);border-radius:var(--radius-lg);padding:var(--space-xl);margin-bottom:var(--space-xl)}
+.single-section-title{font-size:var(--font-size-xl);font-weight:700;margin-bottom:var(--space-lg)}
+.single-description{line-height:1.8;color:var(--gray-600)}
+.sidebar-card{background:var(--brand-white);border-radius:var(--radius-lg);padding:var(--space-lg);margin-bottom:var(--space-lg);box-shadow:var(--shadow-sm)}
+.sidebar-card-title{font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-md);color:var(--gray-800)}
+.sidebar-address{color:var(--gray-600);margin-bottom:var(--space-md)}
+.hours-list{display:flex;flex-direction:column;gap:8px}
+.hours-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)}
+.hours-row.today{background:var(--brand-green-light);margin:0 -16px;padding:8px 16px;border-radius:var(--radius-sm);font-weight:600}
+.hours-day{color:var(--gray-600)}
+.hours-time{color:var(--gray-800)}
+.contact-item{margin-bottom:12px}
+.contact-item strong{display:block;font-size:var(--font-size-sm);color:var(--gray-500)}
+.contact-item a{color:var(--brand-coral);font-weight:500}
+.review-form{background:var(--gray-50);padding:var(--space-lg);border-radius:var(--radius-lg);margin-bottom:var(--space-xl)}
+.rating-input{display:flex;gap:8px;margin-bottom:var(--space-md)}
+.star-btn{cursor:pointer;color:var(--gray-300);transition:var(--transition)}
+.star-btn:hover,.star-btn.active{color:var(--warning)}
+.review-form .form-textarea{margin-bottom:var(--space-md)}
+.review-item{padding:var(--space-lg) 0;border-bottom:1px solid var(--gray-100)}
+.review-item:last-child{border-bottom:none}
+.review-header{display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm)}
+@media(max-width:900px){.single-content{grid-template-columns:1fr}.single-sidebar{order:-1}}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize map
     if (typeof L !== 'undefined' && document.getElementById('map')) {
         const map = L.map('map').setView([19.4326, -99.1332], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-        
-        <?php 
-        $lat = get_post_meta($negocio_id, 'cnmx_latitud', true);
-        $lng = get_post_meta($negocio_id, 'cnmx_longitud', true);
-        if (!$lat) $lat = '19.4326';
-        if (!$lng) $lng = '-99.1332';
-        ?>
-        
-        L.marker([<?php echo $lat; ?>, <?php echo $lng; ?>]).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
+        L.marker([<?php echo get_post_meta($negocio_id, 'cnmx_latitud', true) ?: '19.4326'; ?>, <?php echo get_post_meta($negocio_id, 'cnmx_longitud', true) ?: '-99.1332'; ?>]).addTo(map);
     }
 });
 </script>
 
-<?php get_footer(); ?>
+<?php wp_footer(); ?>
+</body>
+</html>
