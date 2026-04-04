@@ -1,74 +1,208 @@
 <?php
 /**
- * Archive Negocio Template - Listado de negocios (directorio)
+ * Archive Negocio Template - Directorio estilo Airbnb
  */
 
 if (!defined('ABSPATH')) exit;
-?>
 
-<!DOCTYPE html>
-<html <?php language_attributes(); ?>>
-<head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php wp_head(); ?>
-</head>
-<body <?php body_class(); ?>>
-<?php wp_body_open(); ?>
-
-<?php
 $categoria = isset($_GET['categoria']) ? sanitize_text_field($_GET['categoria']) : '';
-$busqueda = isset($_GET['q']) ? sanitize_text_field($_GET['q']) : '';
+$busqueda = isset($_GET['buscar']) ? sanitize_text_field($_GET['buscar']) : '';
 
-$args = array(
+$args = [
     'post_type' => 'negocio',
     'post_status' => 'publish',
     'posts_per_page' => 12,
-);
+];
 
 if ($categoria) {
-    $args['tax_query'] = array(array('taxonomy' => 'categoria', 'field' => 'slug', 'terms' => $categoria));
+    $args['tax_query'] = [['taxonomy' => 'categoria', 'field' => 'slug', 'terms' => $categoria]];
 }
-
 if ($busqueda) {
     $args['s'] = $busqueda;
 }
 
 $negocios = new WP_Query($args);
-
-$categories = get_terms(array('taxonomy' => 'categoria', 'hide_empty' => true));
+$categories = get_terms(['taxonomy' => 'categoria', 'hide_empty' => true]);
 
 $user_megafonos = 0;
 if (is_user_logged_in()) {
     global $wpdb;
-    $meta = $wpdb->get_row($wpdb->prepare(
-        "SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d",
-        get_current_user_id()
-    ));
+    $meta = $wpdb->get_row($wpdb->prepare("SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d", get_current_user_id()));
     $user_megafonos = $meta ? $meta->megafonos : 0;
 }
 ?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Directorio - Cuentanos.mx</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php wp_head(); ?>
+</head>
+<body>
+<style>
+:root {
+    --primary: #EB510C;
+    --primary-dark: #C94409;
+    --secondary: #F89D2F;
+    --cream: #FFFCF8;
+    --text: #1a1a2e;
+    --text-light: #6b7280;
+    --text-muted: #9ca3af;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --surface: #f9fafb;
+    --radius: 16px;
+    --radius-sm: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--cream); line-height: 1.6; }
+a { text-decoration: none; color: inherit; transition: var(--transition); }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* NAVBAR */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+}
+.navbar .container { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.navbar-logo img { height: 36px; width: auto; }
+.navbar-right { display: flex; align-items: center; gap: 12px; }
+.btn-outline { padding: 10px 20px; border: 1px solid var(--border); border-radius: 100px; font-size: 14px; font-weight: 500; }
+.btn-outline:hover { border-color: var(--text); }
+.btn-primary { padding: 10px 20px; background: var(--primary); color: white; border-radius: 100px; font-size: 14px; font-weight: 600; }
+.btn-primary:hover { background: var(--primary-dark); }
+.megafonos-badge { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: 100px; font-size: 14px; font-weight: 700; }
+
+/* HERO */
+.directory-hero {
+    padding: 140px 0 60px; text-align: center;
+    background: linear-gradient(180deg, var(--cream) 0%, white 100%);
+}
+.directory-hero h1 { font-size: 40px; font-weight: 800; margin-bottom: 8px; }
+.directory-hero p { font-size: 18px; color: var(--text-light); }
+
+/* SEARCH */
+.search-section { padding: 0 0 40px; }
+.search-box {
+    max-width: 800px; margin: 0 auto; background: white;
+    border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 8px; display: flex; align-items: center; gap: 8px;
+}
+.search-field { flex: 1; padding: 16px 20px; }
+.search-field input, .search-field select {
+    width: 100%; border: none; outline: none; font-size: 15px;
+    color: var(--text); background: transparent;
+}
+.search-field input::placeholder { color: var(--text-muted); }
+.search-divider { width: 1px; height: 40px; background: var(--border); }
+.search-btn {
+    padding: 16px 28px; background: var(--primary); color: white;
+    border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+}
+.search-btn:hover { background: var(--primary-dark); }
+
+/* RESULTS */
+.results-section { padding: 40px 0 80px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+.section-title { font-size: 28px; font-weight: 700; }
+.results-count { font-size: 16px; font-weight: 400; color: var(--text-muted); margin-left: 8px; }
+
+/* BUSINESS GRID */
+.businesses-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+.business-card {
+    background: white; border-radius: var(--radius); overflow: hidden;
+    transition: var(--transition); display: block;
+}
+.business-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.business-img { position: relative; aspect-ratio: 4/3; overflow: hidden; }
+.business-img img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
+.business-card:hover .business-img img { transform: scale(1.05); }
+.business-fav {
+    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px;
+    background: white; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; box-shadow: var(--shadow); color: var(--text-muted);
+}
+.business-fav.active { color: #ef4444; }
+.business-fav svg { width: 18px; height: 18px; }
+.business-content { padding: 20px; }
+.business-category { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.business-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.business-rating { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.business-stars { color: var(--secondary); }
+.business-reviews { color: var(--text-muted); }
+.business-location { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-light); margin-top: 8px; }
+.business-location svg { width: 14px; height: 14px; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 80px 20px; }
+.empty-state svg { width: 80px; height: 80px; color: var(--text-muted); margin-bottom: 20px; }
+.empty-state h3 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.empty-state p { color: var(--text-light); margin-bottom: 24px; }
+
+/* CTA */
+.cta-section { padding: 80px 0; background: var(--text); text-align: center; }
+.cta-section h2 { font-size: 36px; font-weight: 800; color: white; margin-bottom: 12px; }
+.cta-section p { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+.btn-white { padding: 16px 32px; background: white; color: var(--text); border-radius: var(--radius-sm); font-weight: 600; }
+.btn-white:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* FOOTER */
+.site-footer { background: var(--text); color: white; padding: 40px 0 20px; }
+.footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.footer-content p { color: rgba(255,255,255,0.7); font-size: 14px; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { color: rgba(255,255,255,0.7); font-size: 14px; }
+.footer-links a:hover { color: white; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 20px; padding-top: 20px; text-align: center; }
+.footer-bottom p { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+/* PAGINATION */
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 48px; }
+.pagination a, .pagination span { display: flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: var(--radius-sm); font-weight: 500; transition: var(--transition); }
+.pagination a { background: white; border: 1px solid var(--border); color: var(--text); }
+.pagination a:hover { border-color: var(--primary); color: var(--primary); }
+.pagination .current { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) { .businesses-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+    .directory-hero h1 { font-size: 28px; }
+    .search-box { flex-direction: column; padding: 16px; }
+    .search-field { width: 100%; border-bottom: 1px solid var(--border); }
+    .search-divider { display: none; }
+    .search-btn { width: 100%; justify-content: center; }
+    .businesses-grid { grid-template-columns: 1fr; }
+    .footer-content { flex-direction: column; text-align: center; }
+}
+</style>
 
 <!-- NAVBAR -->
 <nav class="navbar">
     <div class="container">
         <a href="<?php echo home_url(); ?>" class="navbar-logo">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-            </svg>
-            Cuentanos.mx
+            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx">
         </a>
-        <div class="navbar-nav">
-            <a href="<?php echo home_url(); ?>" class="navbar-link">Inicio</a>
-            <a href="<?php echo home_url('/directorio'); ?>" class="navbar-link active">Explorar</a>
-        </div>
-        <div class="navbar-actions">
+        <div class="navbar-right">
             <?php if (is_user_logged_in()): ?>
                 <span class="megafonos-badge"><span>📣</span><span><?php echo $user_megafonos; ?></span></span>
-                <a href="<?php echo home_url('/perfil'); ?>" class="btn btn-outline">Mi Perfil</a>
+                <a href="<?php echo home_url('/perfil'); ?>" class="btn-outline">Mi Perfil</a>
             <?php else: ?>
-                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn btn-outline">Iniciar sesión</a>
-                <a href="<?php echo home_url('/registro'); ?>" class="btn btn-primary">Registrarse</a>
+                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn-outline">Iniciar sesión</a>
+                <a href="<?php echo home_url('/registro'); ?>" class="btn-primary">Registrarse</a>
             <?php endif; ?>
         </div>
     </div>
@@ -83,33 +217,32 @@ if (is_user_logged_in()) {
         </div>
     </section>
     
-    <!-- FILTERS -->
-    <section class="directory-filters">
+    <!-- SEARCH -->
+    <section class="search-section">
         <div class="container">
-            <form class="directory-search" method="GET">
-                <div class="search-field">
-                    <input type="text" name="q" placeholder="Buscar negocios..." value="<?php echo esc_attr($busqueda); ?>">
+            <form class="search-box" method="GET">
+                <div class="search-field" style="flex: 2;">
+                    <input type="text" name="buscar" placeholder="Buscar negocios..." value="<?php echo esc_attr($busqueda); ?>">
                 </div>
+                <div class="search-divider"></div>
                 <div class="search-field">
                     <select name="categoria">
-                        <option value="">Todas las categorías</option>
+                        <option value="">Todas</option>
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat->slug; ?>" <?php selected($categoria, $cat->slug); ?>>
-                                <?php echo $cat->name; ?>
-                            </option>
+                            <option value="<?php echo $cat->slug; ?>" <?php selected($categoria, $cat->slug); ?>><?php echo $cat->name; ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button type="submit" class="search-btn">Buscar</button>
-                <?php if ($categoria || $busqueda): ?>
-                    <a href="<?php echo home_url('/directorio'); ?>" class="btn btn-outline">Limpiar</a>
-                <?php endif; ?>
+                <button type="submit" class="search-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Buscar
+                </button>
             </form>
         </div>
     </section>
     
     <!-- RESULTS -->
-    <section class="section">
+    <section class="results-section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">
@@ -129,7 +262,7 @@ if (is_user_logged_in()) {
             
             <?php if ($negocios->have_posts()): ?>
                 <div class="businesses-grid">
-                    <?php while ($negocios->have_posts()): $negocios->the_post(); 
+                    <?php while ($negocios->have_posts()): $negocios->the_post();
                         $rating = get_post_meta(get_the_ID(), 'cnmx_rating', true) ?: 0;
                         $reviews = get_post_meta(get_the_ID(), 'cnmx_reviews_count', true) ?: 0;
                         $direccion = get_post_meta(get_the_ID(), 'cnmx_direccion', true) ?: '';
@@ -137,35 +270,26 @@ if (is_user_logged_in()) {
                         $cats = get_the_terms(get_the_ID(), 'categoria');
                         $categoria_nombre = $cats ? $cats[0]->name : 'General';
                     ?>
-                        <a href="<?php the_permalink(); ?>" class="business-card" data-negocio-id="<?php the_ID(); ?>">
-                            <div class="business-card-img">
+                        <a href="<?php the_permalink(); ?>" class="business-card">
+                            <div class="business-img">
                                 <img src="<?php echo esc_url($imagen); ?>" alt="<?php the_title_attribute(); ?>">
-                                <button class="business-card-fav" data-id="<?php the_ID(); ?>">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                    </svg>
+                                <button class="business-fav" data-id="<?php the_ID(); ?>">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 </button>
                             </div>
-                            <div class="business-card-content">
-                                <span class="business-card-cat"><?php echo esc_html($categoria_nombre); ?></span>
-                                <h3 class="business-card-title"><?php the_title(); ?></h3>
-                                <div class="business-card-rating">
-                                    <span class="business-card-stars">
-                                        <?php for ($i = 0; $i < 5; $i++): ?>
-                                            <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
-                                        <?php endfor; ?>
-                                    </span>
-                                    <span class="business-card-rating-num"><?php echo number_format($rating, 1); ?></span>
-                                    <span class="business-card-reviews">(<?php echo $reviews; ?>)</span>
+                            <div class="business-content">
+                                <span class="business-category"><?php echo esc_html($categoria_nombre); ?></span>
+                                <h3 class="business-title"><?php the_title(); ?></h3>
+                                <div class="business-rating">
+                                    <span class="business-stars"><?php for($i=0;$i<5;$i++) echo $i<floor($rating)?'★':'☆'; ?></span>
+                                    <span><?php echo number_format($rating, 1); ?></span>
+                                    <span class="business-reviews">(<?php echo $reviews; ?>)</span>
                                 </div>
                                 <?php if ($direccion): ?>
-                                <div class="business-card-location">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                        <circle cx="12" cy="10" r="3"/>
-                                    </svg>
-                                    <span><?php echo esc_html($direccion); ?></span>
-                                </div>
+                                    <div class="business-location">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        <?php echo esc_html($direccion); ?>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </a>
@@ -175,24 +299,24 @@ if (is_user_logged_in()) {
                 <?php if ($negocios->max_num_pages > 1): ?>
                     <div class="pagination">
                         <?php
-                        echo paginate_links(array(
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '?paged=%#%',
+                        echo paginate_links([
+                            'base' => add_query_arg('pagina', '%#%'),
+                            'format' => '?pagina=%#%',
                             'current' => max(1, get_query_var('paged')),
                             'total' => $negocios->max_num_pages,
-                            'prev_text' => '&laquo; Anterior',
-                            'next_text' => 'Siguiente &raquo;',
-                        ));
+                            'prev_text' => '← Anterior',
+                            'next_text' => 'Siguiente →',
+                        ]);
                         ?>
                     </div>
                 <?php endif; ?>
                 
             <?php else: ?>
                 <div class="empty-state">
-                    <div class="empty-state-icon">🔍</div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <h3>No se encontraron negocios</h3>
                     <p>Intenta con otros términos de búsqueda o explora todas las categorías.</p>
-                    <a href="<?php echo home_url('/directorio'); ?>" class="btn btn-primary mt-lg">Ver todos los negocios</a>
+                    <a href="<?php echo home_url('/directorio'); ?>" class="btn-primary">Ver todos los negocios</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -201,11 +325,9 @@ if (is_user_logged_in()) {
     <!-- CTA -->
     <section class="cta-section">
         <div class="container">
-            <div class="cta-content">
-                <h2>¿Tienes un negocio?</h2>
-                <p>Llega a miles de clientes locales y muestra lo mejor de tu empresa</p>
-                <a href="<?php echo home_url('/registrar-negocio'); ?>" class="btn btn-white btn-lg">Registrar mi negocio</a>
-            </div>
+            <h2>¿Tienes un negocio?</h2>
+            <p>Llega a miles de clientes locales y muestra lo mejor de tu empresa</p>
+            <a href="<?php echo home_url('/registrar-negocio'); ?>" class="btn-white">Registrar mi negocio</a>
         </div>
     </section>
 </main>
@@ -214,48 +336,40 @@ if (is_user_logged_in()) {
 <footer class="site-footer">
     <div class="container">
         <div class="footer-content">
-            <div class="footer-brand">
-                <a href="<?php echo home_url(); ?>" class="footer-logo">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                    </svg>
-                    Cuentanos.mx
-                </a>
-                <p>Descubre los mejores negocios locales en México.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Explorar</h4>
+            <p>© <?php echo date('Y'); ?> <strong>Cuentanos.mx</strong>. Todos los derechos reservados.</p>
+            <div class="footer-links">
                 <a href="<?php echo home_url('/directorio'); ?>">Directorio</a>
+                <a href="<?php echo home_url('/registrar-negocio'); ?>">Para negocios</a>
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
             </div>
-            <div class="footer-col">
-                <h4>Negocios</h4>
-                <a href="<?php echo home_url('/registrar-negocio'); ?>">Registrar negocio</a>
-            </div>
-            <div class="footer-col">
-                <h4>Cuenta</h4>
-                <a href="<?php echo home_url('/registro'); ?>">Registrarse</a>
-                <a href="<?php echo home_url('/mi-cuenta'); ?>">Iniciar sesión</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date('Y'); ?> Cuentanos.mx. Todos los derechos reservados.</p>
         </div>
     </div>
 </footer>
 
-<style>
-.results-count{font-size:var(--font-size-base);font-weight:400;color:var(--gray-500);margin-left:var(--space-sm)}
-.pagination{display:flex;justify-content:center;gap:var(--space-sm);margin-top:var(--space-2xl)}
-.pagination a,.pagination span{display:flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:var(--radius-md);font-weight:500;transition:var(--transition)}
-.pagination a{background:var(--brand-white);border:1px solid var(--gray-200)}
-.pagination a:hover{border-color:var(--brand-green);color:var(--brand-green)}
-.pagination .current{background:var(--brand-green);color:var(--brand-white)}
-@media(max-width:768px){.directory-search{flex-direction:column}.search-field{width:100%}}
-</style>
+<script>
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.business-fav')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const btn = e.target.closest('.business-fav');
+        const id = btn.dataset.id;
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_favorito', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'negocio_id=' + id + '&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.toggle('active');
+                btn.querySelector('svg').setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
+            }
+        });
+    }
+});
+</script>
 
-<?php 
-wp_reset_postdata();
-wp_footer();
-?>
+<?php wp_reset_postdata(); wp_footer(); ?>
 </body>
 </html>

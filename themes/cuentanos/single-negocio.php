@@ -1,23 +1,10 @@
 <?php
 /**
- * Single Negocio Template - Pagina individual de negocio
+ * Single Negocio Template - Estilo Airbnb
  */
 
 if (!defined('ABSPATH')) exit;
-?>
 
-<!DOCTYPE html>
-<html <?php language_attributes(); ?>>
-<head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php wp_head(); ?>
-</head>
-<body <?php body_class(); ?>>
-<?php wp_body_open(); ?>
-
-<?php
-// Get negocio data
 $negocio_id = get_the_ID();
 $rating = get_post_meta($negocio_id, 'cnmx_rating', true) ?: 0;
 $reviews_count = get_post_meta($negocio_id, 'cnmx_reviews_count', true) ?: 0;
@@ -27,10 +14,7 @@ $whatsapp = get_post_meta($negocio_id, 'cnmx_whatsapp', true) ?: '';
 $email = get_post_meta($negocio_id, 'cnmx_email', true) ?: '';
 $sitio_web = get_post_meta($negocio_id, 'cnmx_sitio_web', true) ?: '';
 $horarios = get_post_meta($negocio_id, 'cnmx_horarios', true);
-
-if (is_string($horarios)) {
-    $horarios = json_decode($horarios, true) ?: array();
-}
+if (is_string($horarios)) { $horarios = json_decode($horarios, true) ?: []; }
 
 $cats = get_the_terms($negocio_id, 'categoria');
 $categoria = $cats ? $cats[0]->name : 'General';
@@ -41,49 +25,229 @@ $is_favorite = false;
 if (is_user_logged_in()) {
     global $wpdb;
     $user_id = get_current_user_id();
-    $meta = $wpdb->get_row($wpdb->prepare(
-        "SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d",
-        $user_id
-    ));
+    $meta = $wpdb->get_row($wpdb->prepare("SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d", $user_id));
     $user_megafonos = $meta ? $meta->megafonos : 0;
-    
-    $fav = $wpdb->get_var($wpdb->prepare(
-        "SELECT id FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d AND negocio_id = %d",
-        $user_id, $negocio_id
-    ));
+    $fav = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d AND negocio_id = %d", $user_id, $negocio_id));
     $is_favorite = (bool)$fav;
 }
 
 $resenas = $wpdb->get_results($wpdb->prepare(
-    "SELECT r.*, u.display_name as user_name 
-     FROM {$wpdb->prefix}cnmx_resenas r 
-     JOIN {$wpdb->prefix}users u ON u.ID = r.user_id 
-     WHERE r.negocio_id = %d AND r.status = 'aprobado' 
-     ORDER BY r.fecha DESC LIMIT 10",
+    "SELECT r.*, u.display_name as user_name FROM {$wpdb->prefix}cnmx_resenas r JOIN {$wpdb->prefix}users u ON u.ID = r.user_id WHERE r.negocio_id = %d AND r.status = 'aprobado' ORDER BY r.fecha DESC LIMIT 10",
     $negocio_id
 ));
 ?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php the_title(); ?> - Cuentanos.mx</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php wp_head(); ?>
+</head>
+<body>
+<style>
+:root {
+    --primary: #EB510C;
+    --primary-dark: #C94409;
+    --secondary: #F89D2F;
+    --cream: #FFFCF8;
+    --text: #1a1a2e;
+    --text-light: #6b7280;
+    --text-muted: #9ca3af;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --surface: #f9fafb;
+    --radius: 16px;
+    --radius-sm: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--cream); line-height: 1.6; }
+a { text-decoration: none; color: inherit; transition: var(--transition); }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* NAVBAR */
+.navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+}
+.navbar .container {
+    display: flex; align-items: center; justify-content: space-between; height: 72px;
+}
+.navbar-logo img { height: 36px; width: auto; }
+.navbar-right { display: flex; align-items: center; gap: 12px; }
+.btn-outline {
+    padding: 10px 20px; border: 1px solid var(--border); border-radius: 100px;
+    font-size: 14px; font-weight: 500; color: var(--text);
+}
+.btn-outline:hover { border-color: var(--text); }
+.btn-primary {
+    padding: 10px 20px; background: var(--primary); color: white;
+    border-radius: 100px; font-size: 14px; font-weight: 600;
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.megafonos-badge {
+    display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white; border-radius: 100px; font-size: 14px; font-weight: 700;
+}
+
+/* HERO IMAGE */
+.single-hero {
+    position: relative; height: 400px; overflow: hidden;
+}
+.single-hero img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.single-hero-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    padding: 60px 24px 24px; color: white;
+}
+.single-hero-cat {
+    display: inline-block; background: var(--primary); color: white;
+    padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    margin-bottom: 12px;
+}
+.single-hero-title { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+.single-hero-meta {
+    display: flex; align-items: center; gap: 16px; font-size: 14px;
+}
+.stars { color: var(--secondary); }
+
+/* ACTIONS */
+.actions-bar {
+    padding: 20px 0; border-bottom: 1px solid var(--border); background: white;
+}
+.actions-bar .container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.action-btn {
+    display: flex; align-items: center; gap: 8px; padding: 12px 20px;
+    background: white; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; color: var(--text); transition: var(--transition);
+}
+.action-btn:hover { border-color: var(--primary); color: var(--primary); }
+.action-btn.active { border-color: var(--primary); color: var(--primary); background: #FFF3ED; }
+.action-btn-whatsapp { background: #25D366; color: white; border-color: #25D366; }
+.action-btn-whatsapp:hover { background: #128C7E; color: white; }
+
+/* CONTENT */
+.content-section { padding: 40px 0 80px; }
+.content-grid { display: grid; grid-template-columns: 1fr 380px; gap: 48px; }
+
+.section-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+.description { color: var(--text-light); line-height: 1.8; }
+
+/* REVIEWS */
+.reviews-section { margin-top: 40px; }
+.section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+}
+.btn-write-review {
+    padding: 10px 20px; background: var(--primary); color: white;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+}
+.btn-write-review:hover { background: var(--primary-dark); }
+
+.review-form {
+    background: var(--surface); padding: 24px; border-radius: var(--radius);
+    margin-bottom: 24px; display: none;
+}
+.review-form.active { display: block; }
+.rating-input { display: flex; gap: 8px; margin-bottom: 16px; }
+.star-btn { color: var(--border); font-size: 28px; transition: var(--transition); }
+.star-btn:hover, .star-btn.active { color: var(--secondary); }
+.review-textarea {
+    width: 100%; padding: 16px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 15px; resize: vertical;
+    min-height: 120px; margin-bottom: 16px;
+}
+.review-textarea:focus { outline: none; border-color: var(--primary); }
+
+.reviews-list { display: flex; flex-direction: column; gap: 20px; }
+.review-card {
+    padding: 20px; background: var(--cream); border-radius: var(--radius);
+}
+.review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.review-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+}
+.review-info { flex: 1; }
+.review-name { font-weight: 600; display: block; }
+.review-date { font-size: 13px; color: var(--text-muted); }
+.review-stars { color: var(--secondary); font-size: 14px; }
+.review-content { color: var(--text-light); line-height: 1.6; }
+
+/* SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 24px; }
+.sidebar-card {
+    background: white; border-radius: var(--radius); padding: 24px;
+    box-shadow: var(--shadow);
+}
+.sidebar-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+.map-container { height: 200px; border-radius: var(--radius-sm); overflow: hidden; margin-top: 12px; }
+
+.hours-list { display: flex; flex-direction: column; gap: 8px; }
+.hours-row {
+    display: flex; justify-content: space-between; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-size: 14px;
+}
+.hours-row:last-child { border-bottom: none; }
+.hours-row.today { background: #FFF3ED; margin: 0 -24px; padding: 10px 24px; border-radius: var(--radius-sm); font-weight: 600; }
+.hours-day { color: var(--text-light); }
+.hours-time { color: var(--text); }
+
+.contact-list { display: flex; flex-direction: column; gap: 12px; }
+.contact-item { display: flex; align-items: center; gap: 12px; }
+.contact-item svg { color: var(--primary); flex-shrink: 0; }
+.contact-item a { color: var(--primary); font-weight: 500; font-size: 14px; }
+
+/* FOOTER */
+.site-footer { background: var(--text); color: white; padding: 40px 0 20px; }
+.footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+.footer-content p { color: rgba(255,255,255,0.7); font-size: 14px; }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { color: rgba(255,255,255,0.7); font-size: 14px; }
+.footer-links a:hover { color: white; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 20px; padding-top: 20px; text-align: center; }
+.footer-bottom p { color: rgba(255,255,255,0.5); font-size: 13px; }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) { .content-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+    .single-hero { height: 300px; }
+    .single-hero-title { font-size: 28px; }
+    .actions-bar .container { gap: 8px; }
+    .action-btn { padding: 10px 14px; font-size: 13px; }
+}
+</style>
 
 <!-- NAVBAR -->
 <nav class="navbar">
     <div class="container">
         <a href="<?php echo home_url(); ?>" class="navbar-logo">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-            </svg>
-            Cuentanos.mx
+            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx">
         </a>
-        <div class="navbar-nav">
-            <a href="<?php echo home_url(); ?>" class="navbar-link">Inicio</a>
-            <a href="<?php echo home_url('/directorio'); ?>" class="navbar-link">Explorar</a>
-        </div>
-        <div class="navbar-actions">
+        <div class="navbar-right">
             <?php if (is_user_logged_in()): ?>
                 <span class="megafonos-badge"><span>📣</span><span><?php echo $user_megafonos; ?></span></span>
-                <a href="<?php echo home_url('/perfil'); ?>" class="btn btn-outline">Mi Perfil</a>
+                <a href="<?php echo home_url('/perfil'); ?>" class="btn-outline">Mi Perfil</a>
             <?php else: ?>
-                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn btn-outline">Iniciar sesión</a>
-                <a href="<?php echo home_url('/registro'); ?>" class="btn btn-primary">Registrarse</a>
+                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn-outline">Iniciar sesión</a>
+                <a href="<?php echo home_url('/registro'); ?>" class="btn-primary">Registrarse</a>
             <?php endif; ?>
         </div>
     </div>
@@ -92,116 +256,108 @@ $resenas = $wpdb->get_results($wpdb->prepare(
 <main>
     <!-- HERO IMAGE -->
     <section class="single-hero">
-        <img src="<?php echo esc_url($imagen_principal); ?>" alt="<?php the_title_attribute(); ?>" class="single-hero-img">
+        <img src="<?php echo esc_url($imagen_principal); ?>" alt="<?php the_title_attribute(); ?>">
         <div class="single-hero-overlay">
             <div class="container">
                 <span class="single-hero-cat"><?php echo esc_html($categoria); ?></span>
                 <h1 class="single-hero-title"><?php the_title(); ?></h1>
                 <div class="single-hero-meta">
-                    <span class="business-card-stars">
-                        <?php for ($i = 0; $i < 5; $i++): ?>
-                            <span class="<?php echo $i < floor($rating) ? '' : 'empty'; ?>">★</span>
-                        <?php endfor; ?>
-                    </span>
+                    <span class="stars"><?php for($i=0;$i<5;$i++) echo $i<floor($rating)?'★':'☆'; ?></span>
                     <span><?php echo number_format($rating, 1); ?> (<?php echo $reviews_count; ?> reseñas)</span>
-                    <?php if ($direccion): ?>
-                        <span><?php echo esc_html($direccion); ?></span>
-                    <?php endif; ?>
+                    <?php if ($direccion): ?><span>📍 <?php echo esc_html($direccion); ?></span><?php endif; ?>
                 </div>
             </div>
         </div>
     </section>
-
+    
     <!-- ACTIONS -->
-    <section class="container">
-        <div class="single-actions">
-            <button class="action-btn btn-favorito <?php echo $is_favorite ? 'active' : ''; ?>" data-id="<?php echo $negocio_id; ?>">
-                <svg viewBox="0 0 24 24" fill="<?php echo $is_favorite ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span><?php echo $is_favorite ? 'Guardado' : 'Guardar'; ?></span>
+    <div class="actions-bar">
+        <div class="container">
+            <button class="action-btn <?php echo $is_favorite ? 'active' : ''; ?>" id="btn-fav" data-id="<?php echo $negocio_id; ?>">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="<?php echo $is_favorite ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <?php echo $is_favorite ? 'Guardado' : 'Guardar'; ?>
             </button>
             
             <?php if ($telefono): ?>
                 <a href="tel:<?php echo esc_attr($telefono); ?>" class="action-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span><?php echo esc_html($telefono); ?></span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
+                    <?php echo esc_html($telefono); ?>
                 </a>
             <?php endif; ?>
             
             <?php if ($whatsapp): ?>
                 <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank" class="action-btn action-btn-whatsapp">
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    <span>WhatsApp</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                    WhatsApp
                 </a>
             <?php endif; ?>
             
             <?php if ($sitio_web): ?>
                 <a href="<?php echo esc_url($sitio_web); ?>" target="_blank" class="action-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span>Sitio Web</span>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>
+                    Sitio Web
                 </a>
             <?php endif; ?>
+            
+            <a href="https://maps.google.com/?q=<?php echo urlencode($direccion); ?>" target="_blank" class="action-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Ver en mapa
+            </a>
         </div>
-    </section>
-
-    <!-- MAIN CONTENT -->
-    <section class="section">
+    </div>
+    
+    <!-- CONTENT -->
+    <section class="content-section">
         <div class="container">
-            <div class="single-content">
-                <div class="single-main">
-                    <div class="single-section">
-                        <h2 class="single-section-title">Acerca de <?php the_title(); ?></h2>
-                        <div class="single-description"><?php the_content(); ?></div>
+            <div class="content-grid">
+                <div class="main-content">
+                    <!-- About -->
+                    <div class="section-block">
+                        <h2 class="section-title">Acerca de <?php the_title(); ?></h2>
+                        <p class="description"><?php the_content(); ?></p>
                     </div>
                     
-                    <div class="single-section">
+                    <!-- Reviews -->
+                    <div class="reviews-section">
                         <div class="section-header">
-                            <h2 class="single-section-title">Reseñas</h2>
+                            <h2 class="section-title">Reseñas (<?php echo $reviews_count; ?>)</h2>
                             <?php if (is_user_logged_in()): ?>
-                                <button id="btn-write-review" class="btn btn-outline">Escribir reseña</button>
+                                <button class="btn-write-review" id="btn-toggle-review">Escribir reseña</button>
                             <?php else: ?>
-                                <a href="<?php echo home_url('/registro'); ?>" class="btn btn-outline">Inicia sesión para reseñar</a>
+                                <a href="<?php echo home_url('/registro'); ?>" class="btn-outline" style="padding: 10px 16px;">Inicia sesión para reseñar</a>
                             <?php endif; ?>
                         </div>
                         
                         <?php if (is_user_logged_in()): ?>
-                        <div id="review-form" class="review-form" style="display: none;">
-                            <div class="rating-input" data-rating="0">
-                                <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <button class="star-btn" data-rating="<?php echo $i; ?>">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                    </button>
+                        <div class="review-form" id="review-form">
+                            <div class="rating-input" id="rating-input">
+                                <?php for($i=1;$i<=5;$i++): ?>
+                                    <button class="star-btn" data-rating="<?php echo $i; ?>">★</button>
                                 <?php endfor; ?>
                             </div>
-                            <textarea id="review-text" class="form-textarea" placeholder="Cuéntanos tu experiencia..."></textarea>
-                            <button id="btn-submit-review" class="btn btn-primary" data-negocio="<?php echo $negocio_id; ?>">Enviar Reseña</button>
+                            <textarea class="review-textarea" id="review-text" placeholder="Cuéntanos tu experiencia..."></textarea>
+                            <button class="btn-write-review" id="btn-submit-review" data-negocio="<?php echo $negocio_id; ?>">Enviar Reseña</button>
                         </div>
                         <?php endif; ?>
                         
                         <div class="reviews-list">
                             <?php if (empty($resenas)): ?>
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">⭐</div>
-                                    <h3>No hay reseñas aún</h3>
-                                    <p>¡Sé el primero en compartir tu experiencia!</p>
+                                <div style="text-align:center; padding: 40px; color: var(--text-muted);">
+                                    <p style="font-size: 48px; margin-bottom: 12px;">⭐</p>
+                                    <p>No hay reseñas aún. ¡Sé el primero!</p>
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($resenas as $resena): ?>
-                                    <div class="review-item">
+                                    <div class="review-card">
                                         <div class="review-header">
                                             <div class="review-avatar"><?php echo substr($resena->user_name, 0, 1); ?></div>
                                             <div class="review-info">
                                                 <span class="review-name"><?php echo esc_html($resena->user_name); ?></span>
-                                                <span class="review-meta"><?php echo date('d M Y', strtotime($resena->fecha)); ?></span>
+                                                <span class="review-date"><?php echo date('d M Y', strtotime($resena->fecha)); ?></span>
                                             </div>
-                                            <div class="review-stars">
-                                                <?php for ($i = 0; $i < 5; $i++): ?>
-                                                    <span class="<?php echo $i < $resena->calificacion ? '' : 'empty'; ?>">★</span>
-                                                <?php endfor; ?>
-                                            </div>
+                                            <div class="review-stars"><?php for($i=0;$i<5;$i++) echo $i<$resena->calificacion?'★':'☆'; ?></div>
                                         </div>
-                                        <p class="review-text"><?php echo esc_html($resena->contenido); ?></p>
+                                        <p class="review-content"><?php echo esc_html($resena->contenido); ?></p>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -209,26 +365,30 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                     </div>
                 </div>
                 
-                <aside class="single-sidebar">
+                <!-- SIDEBAR -->
+                <aside class="sidebar">
+                    <?php if ($direccion): ?>
                     <div class="sidebar-card">
-                        <h3 class="sidebar-card-title">Ubicación</h3>
-                        <?php if ($direccion): ?><p class="sidebar-address"><?php echo esc_html($direccion); ?></p><?php endif; ?>
-                        <div id="map" class="map-container"></div>
+                        <h3>📍 Ubicación</h3>
+                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 12px;"><?php echo esc_html($direccion); ?></p>
+                        <a href="https://maps.google.com/?q=<?php echo urlencode($direccion); ?>" target="_blank" class="action-btn" style="width: 100%; justify-content: center;">
+                            Ver en Google Maps
+                        </a>
                     </div>
+                    <?php endif; ?>
                     
                     <div class="sidebar-card">
-                        <h3 class="sidebar-card-title">Horario</h3>
+                        <h3>🕐 Horario</h3>
                         <div class="hours-list">
                             <?php
-                            $dias_semana = array('lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo');
-                            $dias_labels = array('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo');
-                            $dia_actual = strtolower(date('l'));
-                            foreach ($dias_semana as $i => $dia):
+                            $dias = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
+                            $labels = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+                            $hoy = strtolower(date('l'));
+                            foreach($dias as $i => $dia):
                                 $horario = $horarios[$dia] ?? '9:00 - 18:00';
-                                $es_hoy = ($dia === $dia_actual);
                             ?>
-                                <div class="hours-row <?php echo $es_hoy ? 'today' : ''; ?>">
-                                    <span class="hours-day"><?php echo $dias_labels[$i]; ?></span>
+                                <div class="hours-row <?php echo $dia === $hoy ? 'today' : ''; ?>">
+                                    <span class="hours-day"><?php echo $labels[$i]; ?></span>
                                     <span class="hours-time"><?php echo esc_html($horario); ?></span>
                                 </div>
                             <?php endforeach; ?>
@@ -236,10 +396,27 @@ $resenas = $wpdb->get_results($wpdb->prepare(
                     </div>
                     
                     <div class="sidebar-card">
-                        <h3 class="sidebar-card-title">Contacto</h3>
-                        <?php if ($telefono): ?><div class="contact-item"><strong>Teléfono:</strong><a href="tel:<?php echo esc_attr($telefono); ?>"><?php echo esc_html($telefono); ?></a></div><?php endif; ?>
-                        <?php if ($whatsapp): ?><div class="contact-item"><strong>WhatsApp:</strong><a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank"><?php echo esc_html($whatsapp); ?></a></div><?php endif; ?>
-                        <?php if ($email): ?><div class="contact-item"><strong>Email:</strong><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></div><?php endif; ?>
+                        <h3>📞 Contacto</h3>
+                        <div class="contact-list">
+                            <?php if($telefono): ?>
+                                <div class="contact-item">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3"/></svg>
+                                    <a href="tel:<?php echo esc_attr($telefono); ?>"><?php echo esc_html($telefono); ?></a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($whatsapp): ?>
+                                <div class="contact-item">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                                    <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $whatsapp); ?>" target="_blank">WhatsApp</a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($email): ?>
+                                <div class="contact-item">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    <a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </aside>
             </div>
@@ -251,67 +428,79 @@ $resenas = $wpdb->get_results($wpdb->prepare(
 <footer class="site-footer">
     <div class="container">
         <div class="footer-content">
-            <div class="footer-brand">
-                <a href="<?php echo home_url(); ?>" class="footer-logo">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-                    Cuentanos.mx
-                </a>
-                <p>Descubre los mejores negocios locales en México.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Explorar</h4>
+            <p>© <?php echo date('Y'); ?> <strong>Cuentanos.mx</strong>. Todos los derechos reservados.</p>
+            <div class="footer-links">
                 <a href="<?php echo home_url('/directorio'); ?>">Directorio</a>
+                <a href="<?php echo home_url('/registrar-negocio'); ?>">Para negocios</a>
+                <a href="#">Términos</a>
+                <a href="#">Privacidad</a>
             </div>
-            <div class="footer-col">
-                <h4>Negocios</h4>
-                <a href="<?php echo home_url('/registrar-negocio'); ?>">Registrar negocio</a>
-            </div>
-            <div class="footer-col">
-                <h4>Cuenta</h4>
-                <a href="<?php echo home_url('/registro'); ?>">Registrarse</a>
-                <a href="<?php echo home_url('/mi-cuenta'); ?>">Iniciar sesión</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <?php echo date('Y'); ?> Cuentanos.mx. Todos los derechos reservados.</p>
         </div>
     </div>
 </footer>
 
-<style>
-.single-content{display:grid;grid-template-columns:1fr 350px;gap:48px}
-.single-section{background:var(--brand-white);border-radius:var(--radius-lg);padding:var(--space-xl);margin-bottom:var(--space-xl)}
-.single-section-title{font-size:var(--font-size-xl);font-weight:700;margin-bottom:var(--space-lg)}
-.single-description{line-height:1.8;color:var(--gray-600)}
-.sidebar-card{background:var(--brand-white);border-radius:var(--radius-lg);padding:var(--space-lg);margin-bottom:var(--space-lg);box-shadow:var(--shadow-sm)}
-.sidebar-card-title{font-size:var(--font-size-lg);font-weight:600;margin-bottom:var(--space-md);color:var(--gray-800)}
-.sidebar-address{color:var(--gray-600);margin-bottom:var(--space-md)}
-.hours-list{display:flex;flex-direction:column;gap:8px}
-.hours-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)}
-.hours-row.today{background:var(--brand-green-light);margin:0 -16px;padding:8px 16px;border-radius:var(--radius-sm);font-weight:600}
-.hours-day{color:var(--gray-600)}
-.hours-time{color:var(--gray-800)}
-.contact-item{margin-bottom:12px}
-.contact-item strong{display:block;font-size:var(--font-size-sm);color:var(--gray-500)}
-.contact-item a{color:var(--brand-coral);font-weight:500}
-.review-form{background:var(--gray-50);padding:var(--space-lg);border-radius:var(--radius-lg);margin-bottom:var(--space-xl)}
-.rating-input{display:flex;gap:8px;margin-bottom:var(--space-md)}
-.star-btn{cursor:pointer;color:var(--gray-300);transition:var(--transition)}
-.star-btn:hover,.star-btn.active{color:var(--warning)}
-.review-form .form-textarea{margin-bottom:var(--space-md)}
-.review-item{padding:var(--space-lg) 0;border-bottom:1px solid var(--gray-100)}
-.review-item:last-child{border-bottom:none}
-.review-header{display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm)}
-@media(max-width:900px){.single-content{grid-template-columns:1fr}.single-sidebar{order:-1}}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof L !== 'undefined' && document.getElementById('map')) {
-        const map = L.map('map').setView([19.4326, -99.1332], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
-        L.marker([<?php echo get_post_meta($negocio_id, 'cnmx_latitud', true) ?: '19.4326'; ?>, <?php echo get_post_meta($negocio_id, 'cnmx_longitud', true) ?: '-99.1332'; ?>]).addTo(map);
-    }
+    // Toggle favorite
+    document.getElementById('btn-fav')?.addEventListener('click', function() {
+        const btn = this;
+        const id = btn.dataset.id;
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_favorito', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'negocio_id=' + id + '&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                btn.classList.toggle('active');
+                btn.querySelector('svg').setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
+                btn.innerHTML = btn.classList.contains('active') ? '❤️ Guardado' : '🤍 Guardar';
+            }
+        });
+    });
+    
+    // Toggle review form
+    document.getElementById('btn-toggle-review')?.addEventListener('click', function() {
+        document.getElementById('review-form').classList.toggle('active');
+    });
+    
+    // Star rating
+    document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            document.querySelectorAll('.star-btn').forEach((b, i) => {
+                b.classList.toggle('active', i < rating);
+            });
+            document.getElementById('rating-input').dataset.rating = rating;
+        });
+    });
+    
+    // Submit review
+    document.getElementById('btn-submit-review')?.addEventListener('click', function() {
+        const rating = document.getElementById('rating-input').dataset.rating || 0;
+        const contenido = document.getElementById('review-text').value;
+        const negocioId = this.dataset.negocio;
+        
+        if (!rating || !contenido) {
+            alert('Por favor selecciona una calificación y escribe tu reseña.');
+            return;
+        }
+        
+        fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_guardar_resena', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'negocio_id=' + negocioId + '&calificacion=' + rating + '&contenido=' + encodeURIComponent(contenido) + '&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al guardar la reseña');
+            }
+        });
+    });
 });
 </script>
 

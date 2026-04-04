@@ -215,8 +215,23 @@ class CNMX_Biz_Logros {
         ];
         update_user_meta($user_id, 'cnmx_logros_historial', $historial);
         
-        require_once CNMX_PATH . '/includes/class-cnmx-gamificacion.php';
-        $gam = new CNMX_Gamificacion();
-        $gam->agregar_megafonos($user_id, $logro['megafonos'], 'logro_' . $logro['id'], 0);
+        global $wpdb;
+        $wpdb->insert($wpdb->prefix . 'cnmx_historial', [
+            'user_id' => $user_id,
+            'tipo' => 'ganar',
+            'puntos' => $logro['megafonos'],
+            'descripcion' => 'Obtuviste el logro: ' . $logro['titulo'],
+        ]);
+        
+        $meta = $wpdb->get_row($wpdb->prepare(
+            "SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d",
+            $user_id
+        ));
+        $nuevos = $meta ? $meta->megafonos + $logro['megafonos'] : $logro['megafonos'];
+        $wpdb->update(
+            $wpdb->prefix . 'cnmx_usuarios_meta',
+            ['megafonos' => $nuevos],
+            ['user_id' => $user_id]
+        );
     }
 }

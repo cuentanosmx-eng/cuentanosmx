@@ -13,6 +13,30 @@ define('CNMX_BIZ_VERSION', '1.0.0');
 define('CNMX_BIZ_PATH', plugin_dir_path(__FILE__));
 define('CNMX_BIZ_URL', plugin_dir_url(__FILE__));
 
+register_activation_hook(__FILE__, 'cnmx_biz_activate');
+
+function cnmx_biz_activate() {
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+    
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    
+    $tabla_metricas = "CREATE TABLE {$wpdb->prefix}cnmx_metricas (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        negocio_id bigint(20) NOT NULL,
+        tipo varchar(50) NOT NULL,
+        fecha date NOT NULL,
+        cantidad int(11) DEFAULT 0,
+        PRIMARY KEY (id),
+        KEY negocio_id (negocio_id),
+        KEY fecha (fecha)
+    ) $charset_collate;";
+    
+    dbDelta($tabla_metricas);
+    
+    update_option('cnmx_biz_version', CNMX_BIZ_VERSION);
+}
+
 require_once CNMX_BIZ_PATH . 'includes/class-cnmx-biz-setup.php';
 require_once CNMX_BIZ_PATH . 'includes/class-cnmx-biz-dashboard.php';
 require_once CNMX_BIZ_PATH . 'includes/class-cnmx-biz-membresia.php';
