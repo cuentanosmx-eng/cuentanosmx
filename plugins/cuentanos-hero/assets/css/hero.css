@@ -138,8 +138,8 @@
 }
 
 .cnmx-hero-btn:hover {
-    background: rgba(255,255,255,0.25);
-    border-color: rgba(255,255,255,0.5);
+    background: #EB510C;
+    border-color: #EB510C;
     transform: translateY(-2px);
 }
 
@@ -157,7 +157,7 @@
 /* ========== PROGRESS BARS FLOTANTES ========== */
 .cnmx-hero-progress-container {
     position: absolute;
-    bottom: 40px;
+    bottom: 60px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -217,7 +217,7 @@
     }
     
     .cnmx-hero-progress-container {
-        bottom: 30px;
+        bottom: 45px;
         gap: 4px;
         padding: 6px 10px;
     }
