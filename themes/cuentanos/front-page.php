@@ -87,38 +87,41 @@ document.addEventListener('click', function(e) {
 </script>
 
 <main>
-    <!-- Search Box ARRIBA -->
-    <section class="home-search-section">
-        <div class="container">
-            <div class="home-search-box">
-                <form class="home-search-form" action="<?php echo home_url('/directorio'); ?>" method="GET">
-                    <div class="home-search-field">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <input type="text" name="q" placeholder="Buscar restaurantes, cafés, hoteles...">
-                    </div>
-                    <div class="home-search-field">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                        </svg>
-                        <select name="categoria">
-                            <option value="">Todas las categorías</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo $cat->slug; ?>"><?php echo $cat->name; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <button type="submit" class="home-search-btn">Buscar</button>
-                </form>
+    <!-- HERO + SEARCH WRAPPER (search SUPERPUESTO sobre hero) -->
+    <div class="hero-wrapper">
+        <!-- HERO CAROUSEL -->
+        <?php echo do_shortcode('[cnmx_hero]'); ?>
+        
+        <!-- Search Box SUPERPUESTO sobre el hero, debajo de barras de progreso -->
+        <div class="hero-search-box">
+            <div class="container">
+                <div class="home-search-box">
+                    <form class="home-search-form" action="<?php echo home_url('/directorio'); ?>" method="GET">
+                        <div class="home-search-field">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input type="text" name="q" placeholder="Buscar restaurantes, cafés, hoteles...">
+                        </div>
+                        <div class="home-search-field">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <select name="categoria">
+                                <option value="">Todas las categorías</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?php echo $cat->slug; ?>"><?php echo $cat->name; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="home-search-btn">Buscar</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </section>
-    
-    <!-- HERO CAROUSEL con banner naranja detrás -->
-    <?php echo do_shortcode('[cnmx_hero]'); ?>
+    </div>
     
     <!-- MEGAFONOS BANNER -->
     <section class="megafonos-banner">
@@ -135,7 +138,7 @@ document.addEventListener('click', function(e) {
             </div>
         </div>
     </section>
-
+    
     <!-- FEATURED BUSINESSES -->
     <section class="section">
         <div class="container">
@@ -204,19 +207,29 @@ document.addEventListener('click', function(e) {
 </footer>
 
 <style>
-/* Home Search Section */
-.home-search-section {
-    margin-top: -50px;
+/* Hero Wrapper - Sin overflow para permitir que el search se superponga */
+.hero-wrapper {
     position: relative;
+    padding-top: 70px; /* Espacio para navbar fijo */
+}
+
+/* Search Box - SUPERPUESTO sobre el hero, debajo de las barras de progreso */
+.hero-search-box {
+    position: absolute;
+    top: 80vh; /* Debajo de las barras de progreso (que están a 60px del bottom del hero de 85vh) */
+    left: 0;
+    right: 0;
     z-index: 100;
-    margin-bottom: 60px;
+    padding: 0 24px;
 }
 
 .home-search-box {
     background: #fff;
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .home-search-form {
@@ -281,9 +294,15 @@ document.addEventListener('click', function(e) {
 }
 
 @media (max-width: 768px) {
-    .home-search-section {
-        margin-top: 0;
-        padding: 0 16px;
+    .hero-wrapper {
+        padding-top: 70px;
+    }
+    
+    .hero-search-box {
+        position: relative;
+        top: auto;
+        padding: 16px;
+        margin-top: -40px;
     }
     
     .home-search-form {
