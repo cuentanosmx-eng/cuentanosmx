@@ -146,6 +146,9 @@ document.addEventListener('click', function(e) {
         </div>
     </section>
     
+    <!-- ACTIVIDAD RECIENTE -->
+    <?php echo do_shortcode('[cnmx_actividad_reciente num="12"]'); ?>
+    
     <!-- FEATURED BUSINESSES -->
     <section class="section">
         <div class="container">
