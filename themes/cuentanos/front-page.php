@@ -87,10 +87,16 @@ document.addEventListener('click', function(e) {
 </script>
 
 <main>
-    <!-- HERO CAROUSEL -->
-    <?php echo do_shortcode('[cnmx_hero]'); ?>
+    <!-- HERO CON IMAGEN ESTATICA -->
+    <section class="hero-static">
+        <div class="hero-static-bg" style="background-image: url('https://cuentanos.mx/wp-content/uploads/2026/04/HERO.jpg');"></div>
+        <div class="hero-static-overlay"></div>
+        <div class="hero-static-content">
+            <?php echo do_shortcode('[cnmx_hero]'); ?>
+        </div>
+    </section>
     
-    <!-- Search Box debajo del hero -->
+    <!-- Search Box encima del hero -->
     <section class="home-search-section">
         <div class="container">
             <div class="home-search-box">
