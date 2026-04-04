@@ -215,11 +215,13 @@ class CNMX_Hero {
         $slides = get_posts($args);
         
         if (empty($slides)) {
-            return '';
+            return '<div style="padding: 40px; text-align: center; background: #f0f0f0;"><p>No hay slides configurados. <a href="' . admin_url('post-new.php?post_type=cnmx_hero_slide') . '">Crear slide</a></p></div>';
         }
         
         wp_enqueue_style('cnmx-hero-css');
         wp_enqueue_script('cnmx-hero-js');
+        
+        $svg_lupa = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
         
         $html = '<section class="cnmx-hero-carousel">';
         $html .= '<div class="cnmx-hero-slides">';
@@ -248,23 +250,16 @@ class CNMX_Hero {
                 $html .= '<p class="cnmx-hero-subtitle">' . esc_html($subtitulo) . '</p>';
             }
             if ($boton_texto && $boton_enlace) {
-                $html .= '<a href="' . esc_url($boton_enlace) . '" class="cnmx-hero-btn">' . esc_html($boton_texto) . '</a>';
+                $html .= '<a href="' . esc_url($boton_enlace) . '" class="cnmx-hero-btn">' . $svg_lupa . esc_html($boton_texto) . '</a>';
             }
             $html .= '</div>';
             if ($creditos) {
                 $html .= '<div class="cnmx-hero-creditos">' . esc_html($creditos) . '</div>';
             }
+            $html .= '<div class="cnmx-hero-progress"><div class="cnmx-hero-progress-bar"></div></div>';
             $html .= '</div>';
         }
         
-        $html .= '</div>';
-        
-        // Navigation bullets
-        $html .= '<div class="cnmx-hero-nav">';
-        for ($i = 0; $i < count($slides); $i++) {
-            $clase_activa = $i === 0 ? 'active' : '';
-            $html .= '<button class="cnmx-hero-dot ' . $clase_activa . '" data-slide="' . $i . '"></button>';
-        }
         $html .= '</div>';
         
         // Arrows
