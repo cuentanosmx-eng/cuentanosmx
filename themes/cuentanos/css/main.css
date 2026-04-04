@@ -418,16 +418,28 @@ h6 { font-size: var(--font-size-base); }
 .hero-wrapper {
     position: relative;
     padding-top: 70px;
+    overflow: visible;
 }
 
 .hero-search-box {
     position: absolute;
-    top: 90vh;
+    bottom: -80px;
     left: 0;
     right: 0;
     z-index: 100;
     padding: 0 24px;
-    transform: translateY(-70%);
+    animation: slideUpSearch 0.8s ease-out 0.3s both;
+}
+
+@keyframes slideUpSearch {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .home-search-box {
@@ -538,9 +550,9 @@ h6 { font-size: var(--font-size-base); }
 /* ========== MEGAFONOS BANNER ========== */
 .megafonos-banner {
     background: var(--brand-coral);
-    padding: var(--space-3xl) 0;
+    padding: 160px 0 var(--space-3xl);
     position: relative;
-    z-index: 50; /* Debajo del buscador (z-index: 100) */
+    z-index: 50;
 }
 
 .megafonos-banner-inner {
