@@ -172,9 +172,7 @@ class CNMX_Anuncios {
                     'value' => 'si',
                 )
             ),
-            'meta_key' => 'cnmx_orden',
-            'orderby' => 'meta_value_num',
-            'order' => 'ASC',
+            'orderby' => 'rand',
         );
         
         $anuncios = get_posts($args);
@@ -187,14 +185,12 @@ class CNMX_Anuncios {
         wp_enqueue_script('cnmx-anuncios-js');
         wp_localize_script('cnmx-anuncios-js', 'cnmxAnuncios', array(
             'count' => count($anuncios),
-            'autoplay' => true,
-            'interval' => 5000,
+            'interval' => 4000,
         ));
         
         $html = '<section class="cnmx-anuncios-slider">';
         $html .= '<div class="cnmx-anuncios-track">';
         
-        $indicators = '';
         $first = true;
         $index = 0;
         
@@ -227,22 +223,10 @@ class CNMX_Anuncios {
             }
             
             $html .= '</div>';
-            
-            $indicators .= '<button class="cnmx-anuncio-dot ' . $clase_activa . '" data-index="' . $index . '" aria-label="Ir a anuncio ' . ($index + 1) . '"></button>';
-            
             $index++;
         }
         
         $html .= '</div>';
-        
-        if (count($anuncios) > 1) {
-            $html .= '<div class="cnmx-anuncios-nav">';
-            $html .= '<button class="cnmx-anuncio-arrow prev" aria-label="Anuncio anterior"></button>';
-            $html .= '<div class="cnmx-anuncios-dots">' . $indicators . '</div>';
-            $html .= '<button class="cnmx-anuncio-arrow next" aria-label="Siguiente anuncio"></button>';
-            $html .= '</div>';
-        }
-        
         $html .= '</section>';
         
         return $html;
