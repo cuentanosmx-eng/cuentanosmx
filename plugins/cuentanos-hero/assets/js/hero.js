@@ -1,5 +1,5 @@
 /**
- * Cuentanos Hero Carousel - JavaScript
+ * Cuentanos Hero Carousel - JavaScript minimalista
  */
 
 (function($) {
@@ -9,22 +9,17 @@
         constructor(element) {
             this.container = element;
             this.slides = element.find('.cnmx-hero-slide');
-            this.prevBtn = element.find('.cnmx-hero-prev');
-            this.nextBtn = element.find('.cnmx-hero-next');
-            
             this.currentIndex = 0;
             this.totalSlides = this.slides.length;
             this.autoplayDelay = 6000;
-            this.progressInterval = null;
             this.isPaused = false;
+            this.autoplayTimeout = null;
             
             this.init();
         }
         
         init() {
             if (this.totalSlides <= 1) {
-                this.prevBtn.hide();
-                this.nextBtn.hide();
                 return;
             }
             
@@ -33,8 +28,10 @@
         }
         
         bindEvents() {
-            this.prevBtn.on('click', () => this.prev());
-            this.nextBtn.on('click', () => this.next());
+            this.container.on('click', '.cnmx-hero-progress-segment', (e) => {
+                const index = $(e.currentTarget).data('index');
+                this.goTo(index);
+            });
             
             this.container.on('mouseenter', () => this.pause());
             this.container.on('mouseleave', () => this.resume());
@@ -57,6 +54,8 @@
             if (index === this.currentIndex) return;
             
             this.slides.eq(this.currentIndex).removeClass('active');
+            this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex).removeClass('active');
+            this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex).find('.cnmx-hero-progress-bar').css('animation', 'none');
             
             this.currentIndex = index;
             
@@ -67,50 +66,42 @@
             }
             
             this.slides.eq(this.currentIndex).addClass('active');
-            this.startProgress();
+            
+            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
+            segment.addClass('active');
+            segment.find('.cnmx-hero-progress-bar').css('animation', 'none');
+            segment.find('.cnmx-hero-progress-bar').offset();
+            segment.find('.cnmx-hero-progress-bar').css('animation', `segmentProgress ${this.autoplayDelay}ms linear forwards`);
+            
+            this.resetAutoplay();
+        }
+        
+        startAutoplay() {
+            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
+            segment.addClass('active');
+            segment.find('.cnmx-hero-progress-bar').css('animation', `segmentProgress ${this.autoplayDelay}ms linear forwards`);
+            
+            this.autoplayTimeout = setTimeout(() => this.next(), this.autoplayDelay);
         }
         
         next() {
             this.goTo(this.currentIndex + 1);
         }
         
-        prev() {
-            this.goTo(this.currentIndex - 1);
-        }
-        
-        startProgress() {
-            const slide = this.slides.eq(this.currentIndex);
-            const progressBar = slide.find('.cnmx-hero-progress-bar');
-            
-            if (this.progressInterval) {
-                clearInterval(this.progressInterval);
-            }
-            
-            slide.find('.cnmx-hero-progress-bar').css('animation', 'none');
-            slide.find('.cnmx-hero-progress-bar').offset();
-            slide.find('.cnmx-hero-progress-bar').css('animation', `progressSlide ${this.autoplayDelay}ms linear forwards`);
-            
+        resetAutoplay() {
             if (this.autoplayTimeout) {
                 clearTimeout(this.autoplayTimeout);
             }
-            
-            this.autoplayTimeout = setTimeout(() => {
-                if (!this.isPaused) {
-                    this.next();
-                }
-            }, this.autoplayDelay);
-        }
-        
-        startAutoplay() {
-            this.startProgress();
+            this.autoplayTimeout = setTimeout(() => this.next(), this.autoplayDelay);
         }
         
         pause() {
+            if (this.isPaused) return;
             this.isPaused = true;
             
-            const slide = this.slides.eq(this.currentIndex);
-            const progressBar = slide.find('.cnmx-hero-progress-bar');
-            const currentWidth = progressBar.width() / slide.width() * 100;
+            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
+            const progressBar = segment.find('.cnmx-hero-progress-bar');
+            const currentWidth = (progressBar.width() / segment.width()) * 100;
             
             progressBar.css({
                 'animation-play-state': 'paused',
@@ -123,27 +114,23 @@
         }
         
         resume() {
+            if (!this.isPaused) return;
             this.isPaused = false;
             
-            const slide = this.slides.eq(this.currentIndex);
-            const progressBar = slide.find('.cnmx-hero-progress-bar');
+            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
+            const progressBar = segment.find('.cnmx-hero-progress-bar');
             
             progressBar.css('animation-play-state', 'running');
             
-            const currentWidth = progressBar.width() / slide.width() * 100;
-            const remainingTime = (100 - currentWidth) / 100 * this.autoplayDelay;
+            const currentWidth = (progressBar.width() / segment.width()) * 100;
+            const remainingTime = ((100 - currentWidth) / 100) * this.autoplayDelay;
             
-            this.autoplayTimeout = setTimeout(() => {
-                this.next();
-            }, remainingTime);
+            this.autoplayTimeout = setTimeout(() => this.next(), remainingTime);
         }
         
         destroy() {
             if (this.autoplayTimeout) {
                 clearTimeout(this.autoplayTimeout);
-            }
-            if (this.progressInterval) {
-                clearInterval(this.progressInterval);
             }
             this.container.off();
         }

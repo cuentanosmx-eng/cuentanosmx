@@ -227,6 +227,7 @@ class CNMX_Hero {
         $html .= '<div class="cnmx-hero-slides">';
         
         $first = true;
+        $index = 0;
         foreach ($slides as $slide) {
             $imagen_id = get_post_thumbnail_id($slide->ID);
             $imagen_movil = get_post_meta($slide->ID, 'cnmx_imagen_movil', true);
@@ -241,30 +242,35 @@ class CNMX_Hero {
             $clase_activa = $first ? 'active' : '';
             $first = false;
             
-            $html .= '<div class="cnmx-hero-slide ' . $clase_activa . '" data-slide="' . $slide->ID . '">';
+            $html .= '<div class="cnmx-hero-slide ' . $clase_activa . '" data-index="' . $index . '">';
             $html .= '<div class="cnmx-hero-bg" style="background-image: url(\'' . esc_url($imagen_url) . '\');"></div>';
             $html .= '<div class="cnmx-hero-overlay"></div>';
             $html .= '<div class="cnmx-hero-content">';
-            $html .= '<h1 class="cnmx-hero-title">' . esc_html($slide->post_title) . '</h1>';
             if ($subtitulo) {
                 $html .= '<p class="cnmx-hero-subtitle">' . esc_html($subtitulo) . '</p>';
             }
             if ($boton_texto && $boton_enlace) {
-                $html .= '<a href="' . esc_url($boton_enlace) . '" class="cnmx-hero-btn">' . $svg_lupa . esc_html($boton_texto) . '</a>';
+                $html .= '<a href="' . esc_url($boton_enlace) . '" class="cnmx-hero-btn">' . $svg_lupa . '<span>' . esc_html($boton_texto) . '</span></a>';
             }
             $html .= '</div>';
             if ($creditos) {
                 $html .= '<div class="cnmx-hero-creditos">' . esc_html($creditos) . '</div>';
             }
-            $html .= '<div class="cnmx-hero-progress"><div class="cnmx-hero-progress-bar"></div></div>';
             $html .= '</div>';
+            $index++;
         }
         
         $html .= '</div>';
         
-        // Arrows
-        $html .= '<button class="cnmx-hero-arrow cnmx-hero-prev">❮</button>';
-        $html .= '<button class="cnmx-hero-arrow cnmx-hero-next">❯</button>';
+        // Progress bars flotantes
+        $html .= '<div class="cnmx-hero-progress-container">';
+        for ($i = 0; $i < count($slides); $i++) {
+            $clase_activa = $i === 0 ? 'active' : '';
+            $html .= '<div class="cnmx-hero-progress-segment ' . $clase_activa . '" data-index="' . $i . '">';
+            $html .= '<div class="cnmx-hero-progress-bar"></div>';
+            $html .= '</div>';
+        }
+        $html .= '</div>';
         
         $html .= '</section>';
         
