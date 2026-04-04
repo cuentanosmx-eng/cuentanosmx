@@ -139,6 +139,13 @@ document.addEventListener('click', function(e) {
         </div>
     </section>
     
+    <!-- ANUNCIOS SLIDER -->
+    <section class="anuncios-section">
+        <div class="container">
+            <?php echo do_shortcode('[cnmx_anuncios]'); ?>
+        </div>
+    </section>
+    
     <!-- FEATURED BUSINESSES -->
     <section class="section">
         <div class="container">

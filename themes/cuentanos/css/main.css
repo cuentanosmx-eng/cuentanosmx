@@ -555,6 +555,12 @@ h6 { font-size: var(--font-size-base); }
     z-index: 50;
 }
 
+/* ========== ANUNCIOS SECTION ========== */
+.anuncios-section {
+    padding: 60px 0;
+    background: var(--gray-50);
+}
+
 .megafonos-banner-inner {
     display: flex;
     align-items: center;

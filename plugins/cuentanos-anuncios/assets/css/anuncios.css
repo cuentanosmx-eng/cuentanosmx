@@ -1,0 +1,197 @@
+/**
+ * Cuentanos Anuncios Slider - Estilos
+ */
+
+.cnmx-anuncios-slider {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 16px;
+    background: #f5f5f5;
+}
+
+.cnmx-anuncios-track {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2048 / 378;
+    overflow: hidden;
+}
+
+.cnmx-anuncio-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    z-index: 1;
+}
+
+.cnmx-anuncio-slide.active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 2;
+}
+
+.cnmx-anuncio-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.cnmx-anuncio-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.cnmx-anuncio-link:hover .cnmx-anuncio-img {
+    transform: scale(1.02);
+}
+
+.cnmx-anuncio-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 24px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    pointer-events: none;
+}
+
+.cnmx-anuncio-nombre {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Navegación */
+.cnmx-anuncios-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.cnmx-anuncio-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.cnmx-anuncio-arrow:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+.cnmx-anuncio-arrow::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid #333;
+    border-right: 2px solid #333;
+}
+
+.cnmx-anuncio-arrow.prev::before {
+    transform: rotate(-135deg);
+    margin-left: 4px;
+}
+
+.cnmx-anuncio-arrow.next::before {
+    transform: rotate(45deg);
+    margin-right: 4px;
+}
+
+.cnmx-anuncios-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.cnmx-anuncio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    border: 2px solid rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.cnmx-anuncio-dot:hover {
+    background: rgba(255,255,255,0.8);
+}
+
+.cnmx-anuncio-dot.active {
+    background: #EB510C;
+    border-color: #EB510C;
+    transform: scale(1.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cnmx-anuncios-slider {
+        border-radius: 12px;
+    }
+    
+    .cnmx-anuncios-track {
+        aspect-ratio: 16 / 9;
+    }
+    
+    .cnmx-anuncio-overlay {
+        padding: 16px;
+    }
+    
+    .cnmx-anuncio-nombre {
+        font-size: 14px;
+    }
+    
+    .cnmx-anuncios-nav {
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .cnmx-anuncio-arrow {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .cnmx-anuncio-dot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cnmx-anuncios-nav {
+        bottom: 10px;
+    }
+    
+    .cnmx-anuncio-arrow {
+        width: 28px;
+        height: 28px;
+    }
+}
