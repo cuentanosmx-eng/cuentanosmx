@@ -158,6 +158,123 @@ function cnmx_disable_astra_header_footer($is_available) {
 }
 
 /**
+ * Meta Boxes para Negocios
+ */
+function cnmx_add_negocio_meta_boxes() {
+    add_meta_box(
+        'cnmx_negocio_plan',
+        '⭐ Plan de Negocio',
+        'cnmx_negocio_plan_callback',
+        'negocio',
+        'side',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'cnmx_add_negocio_meta_boxes');
+
+function cnmx_negocio_plan_callback($post) {
+    wp_nonce_field('cnmx_negocio_plan', 'cnmx_negocio_plan_nonce');
+    
+    $destacado = get_post_meta($post->ID, 'cnmx_destacado', true);
+    $prioridad = get_post_meta($post->ID, 'cnmx_prioridad', true);
+    $anuncio_activo = get_post_meta($post->ID, 'cnmx_anuncio_activo', true);
+    ?>
+    <style>
+        .cnmx-plan-metabox label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .cnmx-plan-metabox label:hover {
+            background: #e9ecef;
+            border-color: #EB510C;
+        }
+        .cnmx-plan-metabox label.active {
+            background: #FFF3ED;
+            border-color: #EB510C;
+        }
+        .cnmx-plan-metabox input[type="checkbox"] {
+            margin-top: 4px;
+            width: 20px;
+            height: 20px;
+        }
+        .cnmx-plan-metabox .plan-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+        }
+        .cnmx-plan-metabox .plan-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        .cnmx-plan-metabox .plan-icon {
+            font-size: 20px;
+        }
+    </style>
+    <div class="cnmx-plan-metabox">
+        <label class="<?php echo $destacado === 'si' ? 'active' : ''; ?>">
+            <input type="checkbox" name="cnmx_destacado" value="si" <?php checked($destacado, 'si'); ?>>
+            <div class="plan-info">
+                <h4>⭐ Negocio Destacado</h4>
+                <p>Aparece en la sección principal</p>
+            </div>
+        </label>
+        <label class="<?php echo $prioridad === 'si' ? 'active' : ''; ?>">
+            <input type="checkbox" name="cnmx_prioridad" value="si" <?php checked($prioridad, 'si'); ?>>
+            <div class="plan-info">
+                <h4>🚀 Mayor Prioridad</h4>
+                <p>Aparece primero en búsquedas</p>
+            </div>
+        </label>
+        <label class="<?php echo $anuncio_activo === 'si' ? 'active' : ''; ?>">
+            <input type="checkbox" name="cnmx_anuncio_activo" value="si" <?php checked($anuncio_activo, 'si'); ?>>
+            <div class="plan-info">
+                <h4>🎯 Anuncio Activo</h4>
+                <p>Aparece en el slider de anuncios</p>
+            </div>
+        </label>
+    </div>
+    <script>
+        jQuery(document).ready(function($) {
+            $('.cnmx-plan-metabox label input').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $(this).closest('label').addClass('active');
+                } else {
+                    $(this).closest('label').removeClass('active');
+                }
+            });
+        });
+    </script>
+    <?php
+}
+
+function cnmx_save_negocio_plan($post_id) {
+    if (!isset($_POST['cnmx_negocio_plan_nonce']) || !wp_verify_nonce($_POST['cnmx_negocio_plan_nonce'], 'cnmx_negocio_plan')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    $campos = ['cnmx_destacado', 'cnmx_prioridad', 'cnmx_anuncio_activo'];
+    foreach ($campos as $campo) {
+        if (isset($_POST[$campo])) {
+            update_post_meta($post_id, $campo, 'si');
+        } else {
+            update_post_meta($post_id, $campo, 'no');
+        }
+    }
+}
+add_action('save_post_negocio', 'cnmx_save_negocio_plan');
+
+/**
  * Register Custom Post Types
  */
 function cnmx_register_post_types() {

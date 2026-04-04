@@ -91,6 +91,18 @@ class CNMX_Biz_REST_API {
             'callback' => [$this, 'get_mis_recompensas'],
             'permission_callback' => [$this, 'check_auth'],
         ]);
+        
+        register_rest_route($this->namespace, '/todos-negocios', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_all_negocios'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        
+        register_rest_route($this->namespace, '/admin-negocio', [
+            'methods' => 'POST',
+            'callback' => [$this, 'update_admin_negocio'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
     }
     
     public function check_auth() {
@@ -459,6 +471,62 @@ class CNMX_Biz_REST_API {
         return rest_ensure_response([
             'canjeadas' => $canjeadas,
             'megafonos' => $megafonos,
+        ]);
+    }
+    
+    public function get_all_negocios($request) {
+        $negocios = get_posts([
+            'post_type' => 'negocio',
+            'post_status' => ['publish', 'pending', 'draft'],
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+        ]);
+        
+        $data = [];
+        foreach ($negocios as $negocio) {
+            $cats = wp_get_post_terms($negocio->ID, 'categoria');
+            $categoria = !empty($cats) ? $cats[0]->name : '';
+            
+            $data[] = [
+                'id' => $negocio->ID,
+                'title' => $negocio->post_title,
+                'status' => $negocio->post_status,
+                'categoria' => $categoria,
+                'ubicacion' => get_post_meta($negocio->ID, 'cnmx_direccion', true),
+                'destacado' => get_post_meta($negocio->ID, 'cnmx_destacado', true),
+                'prioridad' => get_post_meta($negocio->ID, 'cnmx_prioridad', true),
+                'anuncio_activo' => get_post_meta($negocio->ID, 'cnmx_anuncio_activo', true),
+                'imagen' => get_the_post_thumbnail_url($negocio->ID, 'thumbnail'),
+            ];
+        }
+        
+        return rest_ensure_response($data);
+    }
+    
+    public function update_admin_negocio($request) {
+        $negocio_id = intval($request->get_param('negocio_id'));
+        
+        if (!$negocio_id) {
+            return new WP_Error('id_requerido', 'ID de negocio requerido', ['status' => 400]);
+        }
+        
+        $negocio = get_post($negocio_id);
+        if (!$negocio || $negocio->post_type !== 'negocio') {
+            return new WP_Error('negocio_invalido', 'Negocio no válido', ['status' => 400]);
+        }
+        
+        $campos = ['destacado', 'prioridad', 'anuncio_activo'];
+        foreach ($campos as $campo) {
+            $valor = $request->get_param($campo);
+            if ($valor !== null) {
+                update_post_meta($negocio_id, 'cnmx_' . $campo, sanitize_text_field($valor));
+            }
+        }
+        
+        return rest_ensure_response([
+            'success' => true,
+            'message' => 'Negocio actualizado correctamente',
         ]);
     }
 }

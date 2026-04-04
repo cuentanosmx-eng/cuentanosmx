@@ -32,6 +32,7 @@ class CNMX_Biz_Setup {
             'mi-negocio' => 'Editar Mi Negocio',
             'mis-logros' => 'Mis Logros',
             'mis-recompensas' => 'Mis Recompensas',
+            'admin-directorio' => 'Admin Directorio',
         ];
         
         foreach ($pages as $slug => $title) {
@@ -55,6 +56,13 @@ class CNMX_Biz_Setup {
             'publish_posts' => false,
             'upload_files' => true,
         ]);
+        
+        add_role('admin_directorio', 'Admin Directorio', [
+            'read' => true,
+            'edit_others_posts' => true,
+            'edit_published_posts' => true,
+            'upload_files' => true,
+        ]);
     }
     
     public function enqueue_scripts() {
@@ -73,7 +81,7 @@ class CNMX_Biz_Setup {
         if (is_page()) {
             $slug = $post->post_name;
             
-            $business_pages = ['login-empresa', 'registrar-negocio', 'dashboard-empresa', 'mi-negocio', 'mis-logros', 'mis-recompensas'];
+            $business_pages = ['login-empresa', 'registrar-negocio', 'dashboard-empresa', 'mi-negocio', 'mis-logros', 'mis-recompensas', 'admin-directorio'];
             
             if (in_array($slug, $business_pages)) {
                 return CNMX_BIZ_PATH . 'templates/page-business.php';

@@ -1085,6 +1085,273 @@ if ($slug === 'login-empresa') {
     </div>
     <?php
     get_template_part('templates/partials/footer');
+    
+} elseif ($slug === 'admin-directorio') {
+    get_template_part('templates/partials/header');
+    ?>
+    <div class="cnmx-admin-directorio">
+        <div class="container">
+            <div class="cnmx-admin-header">
+                <h1>🔧 Panel de Administración</h1>
+                <p style="color: var(--cnmx-text-light);">Gestiona todos los negocios del directorio</p>
+            </div>
+            
+            <div class="cnmx-admin-content">
+                <h2>⭐ Planes de Negocios</h2>
+                <p style="margin-bottom: 20px; color: var(--cnmx-text-muted);">Marca los negocios que quieres destacar, dar prioridad o mostrar en el slider de anuncios.</p>
+                
+                <div class="cnmx-admin-filters">
+                    <button class="cnmx-filter-btn active" data-filter="all">Todos</button>
+                    <button class="cnmx-filter-btn" data-filter="destacado">⭐ Destacados</button>
+                    <button class="cnmx-filter-btn" data-filter="prioridad">🚀 Prioridad</button>
+                    <button class="cnmx-filter-btn" data-filter="anuncio">🎯 Anuncio</button>
+                </div>
+                
+                <div class="cnmx-admin-list" id="cnmx-admin-list">
+                    <div class="cnmx-admin-loading">Cargando negocios...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+    .cnmx-admin-directorio {
+        padding: 40px 0;
+    }
+    .cnmx-admin-header {
+        margin-bottom: 32px;
+    }
+    .cnmx-admin-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .cnmx-admin-content {
+        background: var(--cnmx-surface);
+        border-radius: var(--cnmx-radius-xl);
+        padding: 32px;
+        box-shadow: var(--cnmx-shadow-md);
+    }
+    .cnmx-admin-content h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+    .cnmx-admin-filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .cnmx-filter-btn {
+        padding: 10px 20px;
+        background: var(--cnmx-background);
+        border: 2px solid var(--cnmx-border);
+        border-radius: var(--cnmx-radius-full);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all var(--cnmx-transition-fast);
+    }
+    .cnmx-filter-btn:hover {
+        border-color: var(--cnmx-primary);
+    }
+    .cnmx-filter-btn.active {
+        background: var(--cnmx-primary);
+        border-color: var(--cnmx-primary);
+        color: white;
+    }
+    .cnmx-admin-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .cnmx-admin-loading {
+        text-align: center;
+        padding: 40px;
+        color: var(--cnmx-text-muted);
+    }
+    .cnmx-negocio-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--cnmx-background);
+        border-radius: var(--cnmx-radius-lg);
+        transition: all var(--cnmx-transition-fast);
+    }
+    .cnmx-negocio-row:hover {
+        box-shadow: var(--cnmx-shadow-sm);
+    }
+    .cnmx-negocio-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--cnmx-radius-md);
+        object-fit: cover;
+    }
+    .cnmx-negocio-info {
+        flex: 1;
+    }
+    .cnmx-negocio-info h4 {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+    .cnmx-negocio-info p {
+        font-size: 14px;
+        color: var(--cnmx-text-muted);
+        margin: 0;
+    }
+    .cnmx-negocio-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .cnmx-negocio-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: var(--cnmx-radius-full);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all var(--cnmx-transition-fast);
+    }
+    .cnmx-negocio-badge.destacado {
+        background: #FFF3ED;
+        color: #EB510C;
+        border-color: #EB510C;
+    }
+    .cnmx-negocio-badge.prioridad {
+        background: #F0F9FF;
+        color: #0066CC;
+        border-color: #0066CC;
+    }
+    .cnmx-negocio-badge.anuncio {
+        background: #F0FDF4;
+        color: #16A34A;
+        border-color: #16A34A;
+    }
+    .cnmx-negocio-badge.inactive {
+        background: var(--cnmx-background);
+        color: var(--cnmx-text-muted);
+        border-color: var(--cnmx-border);
+    }
+    .cnmx-negocio-badge:hover {
+        opacity: 0.8;
+    }
+    @media (max-width: 768px) {
+        .cnmx-negocio-row {
+            flex-wrap: wrap;
+        }
+        .cnmx-negocio-badges {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        let negocios = [];
+        
+        async function loadNegocios() {
+            try {
+                const response = await fetch('/wp-json/cuentanos/v1/todos-negocios', {
+                    headers: { 'X-WP-Nonce': cnmxBizData.nonce }
+                });
+                negocios = await response.json();
+                renderNegocios('all');
+            } catch (error) {
+                document.getElementById('cnmx-admin-list').innerHTML = '<p>Error al cargar negocios</p>';
+            }
+        }
+        
+        function renderNegocios(filter) {
+            const container = document.getElementById('cnmx-admin-list');
+            
+            let filtered = negocios;
+            if (filter !== 'all') {
+                filtered = negocios.filter(n => {
+                    if (filter === 'destacado') return n.destacado === 'si';
+                    if (filter === 'prioridad') return n.prioridad === 'si';
+                    if (filter === 'anuncio') return n.anuncio_activo === 'si';
+                    return true;
+                });
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding: 40px; color: var(--cnmx-text-muted);">No hay negocios con este filtro</p>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(n => `
+                <div class="cnmx-negocio-row" data-id="${n.id}">
+                    <img src="${n.imagen || 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=160&h=160&fit=crop'}" class="cnmx-negocio-thumb" alt="${n.title}">
+                    <div class="cnmx-negocio-info">
+                        <h4>${n.title}</h4>
+                        <p>${n.categoria || 'Sin categoría'} • ${n.ubicacion || 'Sin ubicación'}</p>
+                    </div>
+                    <div class="cnmx-negocio-badges">
+                        <button class="cnmx-negocio-badge ${n.destacado === 'si' ? 'destacado' : 'inactive'}" 
+                                data-field="destacado" 
+                                data-value="${n.destacado === 'si' ? 'no' : 'si'}">
+                            ⭐ Destacado
+                        </button>
+                        <button class="cnmx-negocio-badge ${n.prioridad === 'si' ? 'prioridad' : 'inactive'}" 
+                                data-field="prioridad" 
+                                data-value="${n.prioridad === 'si' ? 'no' : 'si'}">
+                            🚀 Prioridad
+                        </button>
+                        <button class="cnmx-negocio-badge ${n.anuncio_activo === 'si' ? 'anuncio' : 'inactive'}" 
+                                data-field="anuncio_activo" 
+                                data-value="${n.anuncio_activo === 'si' ? 'no' : 'si'}">
+                            🎯 Anuncio
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.querySelectorAll('.cnmx-negocio-badge').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const row = this.closest('.cnmx-negocio-row');
+                    const negocioId = row.dataset.id;
+                    const field = this.dataset.field;
+                    const value = this.dataset.value;
+                    
+                    try {
+                        const response = await fetch('/wp-json/cnmx-biz/v1/admin-negocio', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-WP-Nonce': cnmxBizData.nonce
+                            },
+                            body: JSON.stringify({ negocio_id: negocioId, [field]: value })
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            loadNegocios();
+                        }
+                    } catch (error) {
+                        alert('Error al actualizar');
+                    }
+                });
+            });
+        }
+        
+        document.querySelectorAll('.cnmx-filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.cnmx-filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderNegocios(this.dataset.filter);
+            });
+        });
+        
+        loadNegocios();
+    });
+    </script>
+    <?php
+    get_template_part('templates/partials/footer');
 }
 
 function get_the_slug() {
