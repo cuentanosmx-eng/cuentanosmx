@@ -5,9 +5,11 @@
 (function($) {
     'use strict';
     
+    var fotoUrls = [];
+    
     $(document).ready(function() {
         initReacciones();
-        initLightbox();
+        initFormResena();
     });
     
     function initReacciones() {
@@ -37,11 +39,6 @@
                 }
             });
         });
-        
-        $(document).on('click', '.reaccion-badge', function() {
-            var resenaId = $(this).closest('.review-card').data('resena-id');
-            console.log('Ver reacciones de:', resenaId);
-        });
     }
     
     function updateReaccionUI($btn, data) {
@@ -54,57 +51,137 @@
             $btn.removeClass('active');
         }
         
+        location.reload();
+    }
+    
+    function initFormResena() {
+        var $form = $('#cnmx-resena-form');
+        if (!$form.length) return;
+        
+        $form.on('click', '.rating-star', function() {
+            var rating = $(this).data('rating');
+            $('#resena-rating-value').val(rating);
+            $('.rating-star').removeClass('active');
+            $('.rating-star').each(function() {
+                if ($(this).data('rating') <= rating) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+        
+        $('.rating-star').each(function() {
+            if ($(this).data('rating') <= 5) {
+                $(this).addClass('active');
+            }
+        });
+        
+        $('#upload-foto-device').on('change', function(e) {
+            handleFotoUpload(e.target.files[0], 'device');
+        });
+        
+        $('#upload-foto-camera').on('change', function(e) {
+            handleFotoUpload(e.target.files[0], 'camera');
+        });
+        
+        $(document).on('click', '.remove-foto', function() {
+            var index = $(this).closest('.foto-item').index();
+            fotoUrls.splice(index, 1);
+            renderFotoPreview();
+            updateFotosInput();
+        });
+        
+        $form.on('submit', function(e) {
+            e.preventDefault();
+            
+            var $submitBtn = $form.find('.resena-submit-btn');
+            var originalText = $submitBtn.text();
+            
+            $submitBtn.text('Publicando...').prop('disabled', true);
+            
+            $.ajax({
+                url: cnmxReviews.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'cnmx_guardar_resena',
+                    nonce: cnmxReviews.nonce,
+                    negocio_id: $form.find('[name="negocio_id"]').val(),
+                    rating: $('#resena-rating-value').val(),
+                    texto: $form.find('[name="texto"]').val(),
+                    fotos: fotoUrls
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('¡Reseña publicada correctamente!');
+                        $form[0].reset();
+                        fotoUrls = [];
+                        renderFotoPreview();
+                        $('.rating-star').removeClass('active');
+                        $('.rating-star[data-rating="5"]').addClass('active');
+                        $('#resena-rating-value').val(5);
+                        location.reload();
+                    } else {
+                        alert(response.data || 'Error al guardar la reseña');
+                    }
+                },
+                error: function() {
+                    alert('Error al procesar la solicitud');
+                },
+                complete: function() {
+                    $submitBtn.text(originalText).prop('disabled', false);
+                }
+            });
+        });
+    }
+    
+    function handleFotoUpload(file, source) {
+        if (!file) return;
+        
+        if (!file.type.match('image.*')) {
+            alert('Por favor selecciona una imagen');
+            return;
+        }
+        
+        var formData = new FormData();
+        formData.append('foto', file);
+        formData.append('action', 'cnmx_subir_foto');
+        formData.append('nonce', cnmxReviews.nonce);
+        
         $.ajax({
             url: cnmxReviews.ajaxUrl,
             type: 'POST',
-            data: {
-                action: 'cnmx_get_resena_reacciones',
-                nonce: cnmxReviews.nonce,
-                resena_id: resenaId
-            },
+            data: formData,
+            contentType: false,
+            processData: false,
             success: function(response) {
-                if (response.success && response.data.html) {
-                    $card.find('.review-reacciones-list').html(response.data.html);
+                if (response.success) {
+                    fotoUrls.push(response.data.url);
+                    renderFotoPreview();
+                    updateFotosInput();
+                } else {
+                    alert(response.data || 'Error al subir la imagen');
                 }
+            },
+            error: function() {
+                alert('Error al subir la imagen');
             }
         });
     }
     
-    function initLightbox() {
-        $(document).on('click', '.review-foto img', function(e) {
-            e.preventDefault();
-            var src = $(this).attr('src');
-            
-            var lightbox = $('<div class="lightbox-overlay"><button class="lightbox-close">&times;</button><img src="' + src + '"></div>');
-            $('body').append(lightbox).css('overflow', 'hidden');
-            
-            lightbox.fadeIn();
-            
-            lightbox.on('click', '.lightbox-close', function() {
-                lightbox.fadeOut(function() {
-                    $(this).remove();
-                    $('body').css('overflow', '');
-                });
-            });
-            
-            lightbox.on('click', function(e) {
-                if (e.target === this) {
-                    lightbox.fadeOut(function() {
-                        $(this).remove();
-                        $('body').css('overflow', '');
-                    });
-                }
-            });
+    function renderFotoPreview() {
+        var $preview = $('#fotos-preview');
+        $preview.empty();
+        
+        fotoUrls.forEach(function(url, index) {
+            var html = '<div class="foto-item">';
+            html += '<img src="' + url + '" alt="Foto">';
+            html += '<button type="button" class="remove-foto">×</button>';
+            html += '</div>';
+            $preview.append(html);
         });
     }
     
-    $(document).on('keydown', function(e) {
-        if (e.key === 'Escape') {
-            $('.lightbox-overlay').fadeOut(function() {
-                $(this).remove();
-                $('body').css('overflow', '');
-            });
-        }
-    });
+    function updateFotosInput() {
+        $('#resena-fotos-value').val(JSON.stringify(fotoUrls));
+    }
     
 })(jQuery);
