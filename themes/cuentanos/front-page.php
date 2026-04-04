@@ -87,27 +87,7 @@ document.addEventListener('click', function(e) {
 </script>
 
 <main>
-    <!-- HERO CAROUSEL -->
-    <?php echo do_shortcode('[cnmx_hero]'); ?>
-    
-    <!-- MEGAFONOS BANNER (detras del buscador) -->
-    <section class="megafonos-banner">
-        <div class="megafonos-banner-bg"></div>
-        <div class="container">
-            <div class="megafonos-banner-inner">
-                <span class="megafonos-banner-icon">📣</span>
-                <div class="megafonos-banner-text">
-                    <h3>¡Únete a Cuentanos.mx!</h3>
-                    <p>Gana Megáfonos con cada reseña y favorito. Cánjealos por recompensas exclusivas.</p>
-                </div>
-                <?php if (!is_user_logged_in()): ?>
-                    <a href="<?php echo home_url('/registro'); ?>" class="btn btn-white btn-lg">Regístrate gratis</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Search Box -->
+    <!-- Search Box ARRIBA -->
     <section class="home-search-section">
         <div class="container">
             <div class="home-search-box">
@@ -133,6 +113,25 @@ document.addEventListener('click', function(e) {
                     </div>
                     <button type="submit" class="home-search-btn">Buscar</button>
                 </form>
+            </div>
+        </div>
+    </section>
+    
+    <!-- HERO CAROUSEL con banner naranja detrás -->
+    <?php echo do_shortcode('[cnmx_hero]'); ?>
+    
+    <!-- MEGAFONOS BANNER -->
+    <section class="megafonos-banner">
+        <div class="container">
+            <div class="megafonos-banner-inner">
+                <span class="megafonos-banner-icon">📣</span>
+                <div class="megafonos-banner-text">
+                    <h3>¡Únete a Cuentanos.mx!</h3>
+                    <p>Gana Megáfonos con cada reseña y favorito. Cánjealos por recompensas exclusivas.</p>
+                </div>
+                <?php if (!is_user_logged_in()): ?>
+                    <a href="<?php echo home_url('/registro'); ?>" class="btn btn-white btn-lg">Regístrate gratis</a>
+                <?php endif; ?>
             </div>
         </div>
     </section>
