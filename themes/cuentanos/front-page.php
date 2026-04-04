@@ -38,26 +38,50 @@ if (is_user_logged_in()) {
 <nav class="navbar">
     <div class="container">
         <a href="<?php echo home_url(); ?>" class="navbar-logo">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-            </svg>
-            Cuentanos.mx
+            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx" class="logo-img">
         </a>
-        <div class="navbar-nav">
-            <a href="<?php echo home_url(); ?>" class="navbar-link">Inicio</a>
-            <a href="<?php echo home_url('/directorio'); ?>" class="navbar-link">Explorar</a>
-        </div>
-        <div class="navbar-actions">
+        
+        <div class="navbar-right">
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown()">
+                    Cuéntanos para empresa
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="<?php echo home_url('/registrar-negocio'); ?>" class="dropdown-item">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Agregar una empresa
+                    </a>
+                    <a href="<?php echo home_url('/login-empresa'); ?>" class="dropdown-item">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Iniciar sesión como empresa
+                    </a>
+                </div>
+            </div>
+            
             <?php if (is_user_logged_in()): ?>
                 <span class="megafonos-badge"><span>📣</span><span><?php echo $user_megafonos; ?></span></span>
-                <a href="<?php echo home_url('/perfil'); ?>" class="btn btn-outline">Mi Perfil</a>
             <?php else: ?>
-                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn btn-outline">Iniciar sesión</a>
-                <a href="<?php echo home_url('/registro'); ?>" class="btn btn-primary">Registrarse</a>
+                <a href="<?php echo home_url('/registro'); ?>" class="navbar-link-simple">Registrarse</a>
             <?php endif; ?>
         </div>
     </div>
 </nav>
+
+<script>
+function toggleDropdown() {
+    const menu = document.getElementById('dropdown-menu');
+    menu.classList.toggle('show');
+}
+
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.dropdown');
+    const menu = document.getElementById('dropdown-menu');
+    if (!dropdown.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+</script>
 
 <main>
     <!-- HERO CAROUSEL -->
