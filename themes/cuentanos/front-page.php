@@ -163,6 +163,9 @@ document.addEventListener('click', function(e) {
             </div>
         </div>
     </section>
+    
+    <!-- CATEGORIAS -->
+    <?php echo do_shortcode('[cnmx_categorias num="8"]'); ?>
 
     <!-- CTA SECTION -->
     <section class="cta-section">
