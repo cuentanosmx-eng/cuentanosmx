@@ -256,6 +256,7 @@ h6 { font-size: var(--font-size-base); }
 .navbar-logo {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .navbar-logo:hover {
@@ -267,10 +268,43 @@ h6 { font-size: var(--font-size-base); }
     width: auto;
 }
 
+.navbar-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.btn-nav {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-nav:not(.btn-nav-primary) {
+    color: #333;
+}
+
+.btn-nav:not(.btn-nav-primary):hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.btn-nav-primary {
+    background: #EB510C;
+    color: #fff;
+}
+
+.btn-nav-primary:hover {
+    background: #C94409;
+    color: #fff;
 }
 
 /* Dropdown */

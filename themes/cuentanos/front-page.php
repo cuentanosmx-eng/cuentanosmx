@@ -41,7 +41,7 @@ if (is_user_logged_in()) {
             <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx" class="logo-img">
         </a>
         
-        <div class="navbar-right">
+        <div class="navbar-center">
             <div class="dropdown">
                 <button class="dropdown-toggle" onclick="toggleDropdown()">
                     Cuéntanos para empresa
@@ -58,11 +58,14 @@ if (is_user_logged_in()) {
                     </a>
                 </div>
             </div>
-            
+        </div>
+        
+        <div class="navbar-right">
             <?php if (is_user_logged_in()): ?>
                 <span class="megafonos-badge"><span>📣</span><span><?php echo $user_megafonos; ?></span></span>
             <?php else: ?>
-                <a href="<?php echo home_url('/registro'); ?>" class="navbar-link-simple">Registrarse</a>
+                <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn-nav">Iniciar sesión</a>
+                <a href="<?php echo home_url('/registro'); ?>" class="btn-nav btn-nav-primary">Registrarse</a>
             <?php endif; ?>
         </div>
     </div>
