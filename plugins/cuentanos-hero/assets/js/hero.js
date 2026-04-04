@@ -9,11 +9,13 @@
         constructor(element) {
             this.container = element;
             this.slides = element.find('.cnmx-hero-slide');
+            this.progressBars = element.find('.cnmx-hero-progress-segment');
             this.currentIndex = 0;
             this.totalSlides = this.slides.length;
             this.autoplayDelay = 6000;
             this.isPaused = false;
             this.autoplayTimeout = null;
+            this.animationFrame = null;
             
             this.init();
         }
@@ -23,8 +25,9 @@
                 return;
             }
             
-            this.bindEvents();
+            this.resetAllProgressBars();
             this.startAutoplay();
+            this.bindEvents();
         }
         
         bindEvents() {
@@ -50,12 +53,17 @@
             });
         }
         
+        resetAllProgressBars() {
+            this.progressBars.find('.cnmx-hero-progress-bar').css({
+                'width': '0%',
+                'animation': 'none'
+            });
+        }
+        
         goTo(index) {
             if (index === this.currentIndex) return;
             
             this.slides.eq(this.currentIndex).removeClass('active');
-            this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex).removeClass('active');
-            this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex).find('.cnmx-hero-progress-bar').css('animation', 'none');
             
             this.currentIndex = index;
             
@@ -67,65 +75,83 @@
             
             this.slides.eq(this.currentIndex).addClass('active');
             
-            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
-            segment.addClass('active');
-            segment.find('.cnmx-hero-progress-bar').css('animation', 'none');
-            segment.find('.cnmx-hero-progress-bar').offset();
-            segment.find('.cnmx-hero-progress-bar').css('animation', `segmentProgress ${this.autoplayDelay}ms linear forwards`);
-            
+            this.resetAllProgressBars();
+            this.startProgressForCurrent();
             this.resetAutoplay();
         }
         
-        startAutoplay() {
-            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
-            segment.addClass('active');
-            segment.find('.cnmx-hero-progress-bar').css('animation', `segmentProgress ${this.autoplayDelay}ms linear forwards`);
+        startProgressForCurrent() {
+            const segment = this.progressBars.eq(this.currentIndex);
+            const progressBar = segment.find('.cnmx-hero-progress-bar');
             
+            setTimeout(() => {
+                progressBar.css({
+                    'width': '0%',
+                    'transition': `width ${this.autoplayDelay}ms linear`
+                });
+                setTimeout(() => {
+                    progressBar.css('width', '100%');
+                }, 50);
+            }, 100);
+        }
+        
+        startAutoplay() {
+            this.slides.eq(0).addClass('active');
+            this.startProgressForCurrent();
+            this.scheduleNext();
+        }
+        
+        scheduleNext() {
+            if (this.autoplayTimeout) {
+                clearTimeout(this.autoplayTimeout);
+            }
             this.autoplayTimeout = setTimeout(() => this.next(), this.autoplayDelay);
+        }
+        
+        resetAutoplay() {
+            this.scheduleNext();
         }
         
         next() {
             this.goTo(this.currentIndex + 1);
         }
         
-        resetAutoplay() {
-            if (this.autoplayTimeout) {
-                clearTimeout(this.autoplayTimeout);
-            }
-            this.autoplayTimeout = setTimeout(() => this.next(), this.autoplayDelay);
-        }
-        
         pause() {
             if (this.isPaused) return;
             this.isPaused = true;
             
-            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
-            const progressBar = segment.find('.cnmx-hero-progress-bar');
-            const currentWidth = (progressBar.width() / segment.width()) * 100;
-            
-            progressBar.css({
-                'animation-play-state': 'paused',
-                'width': currentWidth + '%'
-            });
-            
             if (this.autoplayTimeout) {
                 clearTimeout(this.autoplayTimeout);
             }
+            
+            const segment = this.progressBars.eq(this.currentIndex);
+            const progressBar = segment.find('.cnmx-hero-progress-bar');
+            const currentWidth = progressBar.width();
+            
+            progressBar.css('transition', 'none');
+            const storedWidth = progressBar.data('width') || currentWidth;
+            progressBar.css('width', storedWidth + 'px');
         }
         
         resume() {
             if (!this.isPaused) return;
             this.isPaused = false;
             
-            const segment = this.container.find('.cnmx-hero-progress-segment').eq(this.currentIndex);
+            const segment = this.progressBars.eq(this.currentIndex);
             const progressBar = segment.find('.cnmx-hero-progress-bar');
+            const currentWidth = progressBar.width();
+            const containerWidth = segment.width();
+            const percentComplete = (currentWidth / containerWidth) * 100;
+            const remainingTime = ((100 - percentComplete) / 100) * this.autoplayDelay;
             
-            progressBar.css('animation-play-state', 'running');
+            progressBar.data('width', currentWidth);
+            progressBar.css('transition', `width ${remainingTime}ms linear`);
             
-            const currentWidth = (progressBar.width() / segment.width()) * 100;
-            const remainingTime = ((100 - currentWidth) / 100) * this.autoplayDelay;
+            setTimeout(() => {
+                progressBar.css('width', '100%');
+            }, 50);
             
-            this.autoplayTimeout = setTimeout(() => this.next(), remainingTime);
+            this.scheduleNext();
         }
         
         destroy() {

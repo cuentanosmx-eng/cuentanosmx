@@ -143,6 +143,11 @@
     transform: translateY(-2px);
 }
 
+.cnmx-hero-btn:hover svg,
+.cnmx-hero-btn:hover span {
+    color: #fff;
+}
+
 /* Créditos sutiles */
 .cnmx-hero-creditos {
     position: absolute;
@@ -191,12 +196,7 @@
 }
 
 .cnmx-hero-progress-segment.active .cnmx-hero-progress-bar {
-    animation: segmentProgress 6s linear forwards;
-}
-
-@keyframes segmentProgress {
-    from { width: 0%; }
-    to { width: 100%; }
+    width: 100%;
 }
 
 /* Responsive */
