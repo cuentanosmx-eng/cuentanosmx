@@ -245,6 +245,7 @@ if ($slug === 'login-empresa') {
                 <button class="cnmx-tab-btn" data-tab="contacto">📞 Contacto</button>
                 <button class="cnmx-tab-btn" data-tab="horarios">🕐 Horarios</button>
                 <button class="cnmx-tab-btn" data-tab="fotos">📷 Fotos</button>
+                <button class="cnmx-tab-btn" data-tab="plan">⭐ Plan</button>
                 <button class="cnmx-tab-btn" data-tab="animaciones">✨ Animaciones</button>
             </div>
             
@@ -363,6 +364,64 @@ if ($slug === 'login-empresa') {
                             <input type="file" id="cnmx-fotos-input" accept="image/*" multiple hidden>
                         </div>
                         <div class="cnmx-fotos-preview" id="cnmx-fotos-preview"></div>
+                    </div>
+                </div>
+                
+                <!-- Tab: Plan/Membresía -->
+                <div class="cnmx-tab-content" id="tab-plan">
+                    <div class="cnmx-form-card">
+                        <h3 class="cnmx-form-card-title">⭐ Plan y Membresía</h3>
+                        <p class="cnmx-form-hint">Activa opciones premium para destacar tu negocio</p>
+                        
+                        <div class="cnmx-plan-options">
+                            <label class="cnmx-plan-option <?php echo get_post_meta($negocio_id, 'cnmx_destacado', true) === 'si' ? 'active' : ''; ?>">
+                                <input type="checkbox" name="destacado" value="si" <?php checked(get_post_meta($negocio_id, 'cnmx_destacado', true), 'si'); ?>>
+                                <div class="cnmx-plan-content">
+                                    <div class="cnmx-plan-icon">⭐</div>
+                                    <div class="cnmx-plan-info">
+                                        <h4>Negocios Destacados</h4>
+                                        <p>Aparece en la sección de negocios destacados de la página principal con mayor visibilidad.</p>
+                                    </div>
+                                    <div class="cnmx-plan-check">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="cnmx-plan-option <?php echo get_post_meta($negocio_id, 'cnmx_prioridad', true) === 'si' ? 'active' : ''; ?>">
+                                <input type="checkbox" name="prioridad" value="si" <?php checked(get_post_meta($negocio_id, 'cnmx_prioridad', true), 'si'); ?>>
+                                <div class="cnmx-plan-content">
+                                    <div class="cnmx-plan-icon">🚀</div>
+                                    <div class="cnmx-plan-info">
+                                        <h4>Mayor Prioridad</h4>
+                                        <p>Tu negocio aparece primero en los resultados de búsqueda y filtros.</p>
+                                    </div>
+                                    <div class="cnmx-plan-check">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="cnmx-plan-option <?php echo get_post_meta($negocio_id, 'cnmx_anuncio_activo', true) === 'si' ? 'active' : ''; ?>">
+                                <input type="checkbox" name="anuncio_activo" value="si" <?php checked(get_post_meta($negocio_id, 'cnmx_anuncio_activo', true), 'si'); ?>>
+                                <div class="cnmx-plan-content">
+                                    <div class="cnmx-plan-icon">🎯</div>
+                                    <div class="cnmx-plan-info">
+                                        <h4>Anuncio en Slider</h4>
+                                        <p>Tu banner aparece en el slider de negocios destacados de la página principal.</p>
+                                    </div>
+                                    <div class="cnmx-plan-check">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
@@ -694,6 +753,117 @@ if ($slug === 'login-empresa') {
     .cnmx-speed-label {
         font-weight: 600;
         min-width: 40px;
+    }
+    
+    .cnmx-plan-options {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .cnmx-plan-option {
+        cursor: pointer;
+    }
+    
+    .cnmx-plan-option input {
+        display: none;
+    }
+    
+    .cnmx-plan-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: var(--cnmx-background);
+        border: 2px solid var(--cnmx-border);
+        border-radius: var(--cnmx-radius-lg);
+        transition: all var(--cnmx-transition);
+    }
+    
+    .cnmx-plan-option:hover .cnmx-plan-content {
+        border-color: var(--cnmx-primary);
+    }
+    
+    .cnmx-plan-option input:checked + .cnmx-plan-content {
+        border-color: var(--cnmx-primary);
+        background: rgba(255, 77, 77, 0.05);
+    }
+    
+    .cnmx-plan-icon {
+        font-size: 32px;
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cnmx-surface);
+        border-radius: var(--cnmx-radius-md);
+    }
+    
+    .cnmx-plan-info {
+        flex: 1;
+    }
+    
+    .cnmx-plan-info h4 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    
+    .cnmx-plan-info p {
+        font-size: 14px;
+        color: var(--cnmx-text-muted);
+        margin: 0;
+    }
+    
+    .cnmx-plan-check {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--cnmx-border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--cnmx-transition);
+    }
+    
+    .cnmx-plan-check svg {
+        width: 16px;
+        height: 16px;
+        color: white;
+        opacity: 0;
+        transition: opacity var(--cnmx-transition);
+    }
+    
+    .cnmx-plan-option input:checked + .cnmx-plan-content .cnmx-plan-check {
+        background: var(--cnmx-primary);
+        border-color: var(--cnmx-primary);
+    }
+    
+    .cnmx-plan-option input:checked + .cnmx-plan-content .cnmx-plan-check svg {
+        opacity: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .cnmx-plan-content {
+            flex-wrap: wrap;
+        }
+        
+        .cnmx-plan-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+        }
+        
+        .cnmx-plan-check {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+        
+        .cnmx-plan-option {
+            position: relative;
+        }
     }
     
     .cnmx-form-actions {

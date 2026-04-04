@@ -211,6 +211,11 @@ class CNMX_Biz_REST_API {
                 'color_primario' => get_post_meta($negocio_id, 'cnmx_color_primario', true),
                 'color_secundario' => get_post_meta($negocio_id, 'cnmx_color_secundario', true),
             ],
+            'plan' => [
+                'destacado' => get_post_meta($negocio_id, 'cnmx_destacado', true),
+                'prioridad' => get_post_meta($negocio_id, 'cnmx_prioridad', true),
+                'anuncio_activo' => get_post_meta($negocio_id, 'cnmx_anuncio_activo', true),
+            ],
             'status' => $negocio->post_status,
         ];
         
@@ -274,7 +279,8 @@ class CNMX_Biz_REST_API {
             'domingo_apertura', 'domingo_cierre', 'domingo_cerrado',
             'latitud', 'longitud',
             'animacion_entrada', 'animacion_hover', 'animacion_icono',
-            'color_primario', 'color_secundario'
+            'color_primario', 'color_secundario',
+            'destacado', 'prioridad', 'anuncio_activo'
         ];
         
         foreach ($campos_meta as $campo) {
