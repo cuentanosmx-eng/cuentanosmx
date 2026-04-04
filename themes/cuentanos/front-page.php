@@ -216,12 +216,12 @@ document.addEventListener('click', function(e) {
 /* Search Box - Superpuesto sobre el hero, debajo de las barras de progreso */
 .hero-search-box {
     position: absolute;
-    top: 85vh;
+    top: 90vh;
     left: 0;
     right: 0;
     z-index: 100;
     padding: 0 24px;
-    transform: translateY(-50%);
+    transform: translateY(-70%);
 }
 
 .home-search-box {

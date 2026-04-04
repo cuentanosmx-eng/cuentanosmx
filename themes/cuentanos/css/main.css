@@ -422,12 +422,12 @@ h6 { font-size: var(--font-size-base); }
 
 .hero-search-box {
     position: absolute;
-    top: 85vh;
+    top: 90vh;
     left: 0;
     right: 0;
     z-index: 100;
     padding: 0 24px;
-    transform: translateY(-50%);
+    transform: translateY(-70%);
 }
 
 .home-search-box {
