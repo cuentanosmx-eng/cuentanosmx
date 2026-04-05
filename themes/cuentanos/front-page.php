@@ -63,6 +63,31 @@ if (is_user_logged_in()) {
         <div class="navbar-right">
             <?php if (is_user_logged_in()): ?>
                 <span class="megafonos-badge"><span>📣</span><span><?php echo $user_megafonos; ?></span></span>
+                <div class="user-dropdown">
+                    <button class="user-dropdown-btn" onclick="toggleUserDropdown()">
+                        <?php echo get_avatar(get_current_user_id(), 32); ?>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="user-dropdown-menu" id="user-dropdown-menu">
+                        <a href="<?php echo home_url('/perfil'); ?>" class="user-dropdown-item">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Mi Perfil
+                        </a>
+                        <a href="<?php echo home_url('/mis-favoritos'); ?>" class="user-dropdown-item">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            Mis Favoritos
+                        </a>
+                        <a href="<?php echo home_url('/negocio'); ?>" class="user-dropdown-item">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Explorar Negocios
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="<?php echo wp_logout_url(home_url()); ?>" class="user-dropdown-item logout">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
             <?php else: ?>
                 <a href="<?php echo home_url('/mi-cuenta'); ?>" class="btn-nav">Iniciar sesión</a>
                 <a href="<?php echo home_url('/registro'); ?>" class="btn-nav btn-nav-primary">Registrarse</a>
@@ -70,6 +95,104 @@ if (is_user_logged_in()) {
         </div>
     </div>
 </nav>
+
+<style>
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 24px;
+    transition: background 0.2s;
+}
+
+.user-dropdown-btn:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.user-dropdown-btn img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    min-width: 220px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.user-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.user-dropdown-item:hover {
+    background: #f7f7f7;
+}
+
+.user-dropdown-item.logout {
+    color: #dc2626;
+}
+
+.user-dropdown-item.logout:hover {
+    background: #fef2f2;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 8px 0;
+}
+</style>
+
+<script>
+function toggleUserDropdown() {
+    const menu = document.getElementById('user-dropdown-menu');
+    menu.classList.toggle('show');
+}
+
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.user-dropdown');
+    const menu = document.getElementById('user-dropdown-menu');
+    if (dropdown && !dropdown.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+</script>
 
 <script>
 function toggleDropdown() {

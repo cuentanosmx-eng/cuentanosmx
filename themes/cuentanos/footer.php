@@ -75,11 +75,16 @@ $categorias = get_terms([
                 <div class="footer-col">
                     <h4>Cuenta</h4>
                     <ul>
-                        <li><a href="<?php echo home_url('/registro'); ?>">Crear Cuenta</a></li>
-                        <li><a href="<?php echo home_url('/mi-cuenta'); ?>">Iniciar Sesión</a></li>
+                        <?php if (is_user_logged_in()): ?>
                         <li><a href="<?php echo home_url('/perfil'); ?>">Mi Perfil</a></li>
                         <li><a href="<?php echo home_url('/mis-favoritos'); ?>">Mis Favoritos</a></li>
                         <li><a href="<?php echo home_url('/mis-resenas'); ?>">Mis Reseñas</a></li>
+                        <li><a href="<?php echo wp_logout_url(home_url()); ?>">Cerrar Sesión</a></li>
+                        <?php else: ?>
+                        <li><a href="<?php echo home_url('/registro'); ?>">Crear Cuenta</a></li>
+                        <li><a href="<?php echo home_url('/mi-cuenta'); ?>">Iniciar Sesión</a></li>
+                        <li><a href="<?php echo home_url('/recuperar-contrasena'); ?>">Olvidé mi Contraseña</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 
