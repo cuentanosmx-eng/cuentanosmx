@@ -38,7 +38,15 @@ add_filter('template_include', function($template) {
     if (isset($custom_pages[$slug])) {
         $custom = get_stylesheet_directory() . '/' . $custom_pages[$slug];
         if (file_exists($custom)) {
-            return $custom;
+            // Capturar output del template custom
+            ob_start();
+            include $custom;
+            $content = ob_get_clean();
+            
+            // Reemplazar el contenido de la página
+            add_filter('the_content', function($c) use ($content) {
+                return $content;
+            }, 999);
         }
     }
     
