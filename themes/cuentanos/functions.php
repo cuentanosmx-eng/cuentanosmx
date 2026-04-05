@@ -16,6 +16,35 @@ add_filter('show_admin_bar', function($show) {
     return false;
 });
 
+// Forzar templates de usuario del tema
+add_filter('template_include', function($template) {
+    global $post;
+    
+    if (!$post || $post->post_type !== 'page') {
+        return $template;
+    }
+    
+    $custom_pages = array(
+        'perfil' => 'page-perfil.php',
+        'mi-cuenta' => 'page-mi-cuenta.php',
+        'registro' => 'page-registro.php',
+        'recuperar-contrasena' => 'page-recuperar-contrasena.php',
+        'nueva-contrasena' => 'page-nueva-contrasena.php',
+        'mis-favoritos' => 'page-mis-favoritos.php',
+    );
+    
+    $slug = $post->post_name;
+    
+    if (isset($custom_pages[$slug])) {
+        $custom = get_stylesheet_directory() . '/' . $custom_pages[$slug];
+        if (file_exists($custom)) {
+            return $custom;
+        }
+    }
+    
+    return $template;
+}, 999);
+
 /**
  * Enqueue Scripts and Styles
  */
