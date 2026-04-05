@@ -9,7 +9,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('CNMX_USERS_VERSION', '1.0.3');
+define('CNMX_USERS_VERSION', '1.1.0');
 define('CNMX_USERS_PATH', plugin_dir_path(__FILE__));
 define('CNMX_USERS_URL', plugin_dir_url(__FILE__));
 

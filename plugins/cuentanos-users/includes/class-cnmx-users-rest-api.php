@@ -423,17 +423,47 @@ class CNMX_Users_REST_API {
             return new WP_Error('missing_id', 'ID de recompensa requerido', ['status' => 400]);
         }
         
-        if (!class_exists('CNMX_Biz_Recompensas')) {
-            require_once WP_PLUGIN_DIR . '/cuentanos-business/includes/class-cnmx-biz-recompensas.php';
+        global $wpdb;
+        
+        $recompensa = get_post($recompensa_id);
+        if (!$recompensa || $recompensa->post_type !== 'cnmx_recompensa') {
+            return new WP_Error('not_found', 'Recompensa no encontrada', ['status' => 404]);
         }
         
-        $resultado = CNMX_Biz_Recompensas::canjear($user_id, $recompensa_id);
+        $costo = intval(get_post_meta($recompensa_id, 'cnmx_recompensa_megafonos', true));
+        $codigo = get_post_meta($recompensa_id, 'cnmx_recompensa_codigo', true) ?: 'CNMX' . $recompensa_id;
         
-        if (!$resultado['success']) {
-            return new WP_Error('canje_failed', $resultado['message'], ['status' => 400]);
+        $user_megafonos = $this->get_user_megafonos($user_id);
+        
+        if ($user_megafonos < $costo) {
+            return new WP_Error('insufficient', 'No tienes suficientes Megáfonos', ['status' => 400]);
         }
         
-        return $resultado;
+        $table = $wpdb->prefix . 'cnmx_usuarios_recompensas';
+        $ya_canjeado = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table WHERE user_id = %d AND recompensa_id = %d",
+            $user_id, $recompensa_id
+        ));
+        
+        if ($ya_canjeado) {
+            return new WP_Error('already_redeemed', 'Ya canjeaste esta recompensa', ['status' => 400]);
+        }
+        
+        $wpdb->insert($table, [
+            'user_id' => $user_id,
+            'recompensa_id' => $recompensa_id,
+            'codigo' => $codigo,
+        ]);
+        
+        $nuevo_total = $user_megafonos - $costo;
+        $wpdb->update($wpdb->prefix . 'cnmx_usuarios_meta', ['megafonos' => $nuevo_total], ['user_id' => $user_id]);
+        
+        return [
+            'success' => true,
+            'message' => '¡Recompensa canjeada!',
+            'codigo' => $codigo,
+            'megafonos_restantes' => $nuevo_total,
+        ];
     }
     
     public function get_canjeadas($request) {

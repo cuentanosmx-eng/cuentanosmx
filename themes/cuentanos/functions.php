@@ -16,42 +16,42 @@ add_filter('show_admin_bar', function($show) {
     return false;
 });
 
-// Forzar templates de usuario del tema
-add_filter('template_include', function($template) {
-    global $post;
-    
-    if (!$post || $post->post_type !== 'page') {
-        return $template;
-    }
-    
-    $custom_pages = array(
-        'perfil' => 'page-perfil.php',
-        'mi-cuenta' => 'page-mi-cuenta.php',
-        'registro' => 'page-registro.php',
-        'recuperar-contrasena' => 'page-recuperar-contrasena.php',
-        'nueva-contrasena' => 'page-nueva-contrasena.php',
-        'mis-favoritos' => 'page-mis-favoritos.php',
-    );
-    
-    $slug = $post->post_name;
-    
-    if (isset($custom_pages[$slug])) {
-        $custom = get_stylesheet_directory() . '/' . $custom_pages[$slug];
-        if (file_exists($custom)) {
-            // Capturar output del template custom
-            ob_start();
-            include $custom;
-            $content = ob_get_clean();
-            
-            // Reemplazar el contenido de la página
-            add_filter('the_content', function($c) use ($content) {
-                return $content;
-            }, 999);
-        }
-    }
-    
-    return $template;
-}, 999);
+// NO forzar templates de usuario del tema - el plugin maneja esto
+// add_filter('template_include', function($template) {
+//     global $post;
+//     
+//     if (!$post || $post->post_type !== 'page') {
+//         return $template;
+//     }
+//     
+//     $custom_pages = array(
+//         'perfil' => 'page-perfil.php',
+//         'mi-cuenta' => 'page-mi-cuenta.php',
+//         'registro' => 'page-registro.php',
+//         'recuperar-contrasena' => 'page-recuperar-contrasena.php',
+//         'nueva-contrasena' => 'page-nueva-contrasena.php',
+//         'mis-favoritos' => 'page-mis-favoritos.php',
+//     );
+//     
+//     $slug = $post->post_name;
+//     
+//     if (isset($custom_pages[$slug])) {
+//         $custom = get_stylesheet_directory() . '/' . $custom_pages[$slug];
+//         if (file_exists($custom)) {
+//             // Capturar output del template custom
+//             ob_start();
+//             include $custom;
+//             $content = ob_get_clean();
+//             
+//             // Reemplazar el contenido de la página
+//             add_filter('the_content', function($c) use ($content) {
+//                 return $content;
+//             }, 999);
+//         }
+//     }
+//     
+//     return $template;
+// }, 999);
 
 /**
  * Enqueue Scripts and Styles

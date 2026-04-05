@@ -1027,5 +1027,11 @@ function canjearRecompensa(id, costo) {
 </script>
 
 <?php wp_footer(); ?>
+<link rel="stylesheet" href="<?php echo get_stylesheet_directory_uri(); ?>/css/popups.css">
+<script src="<?php echo get_stylesheet_directory_uri(); ?>/js/popups.js"></script>
+<script>
+window.cnmxUsersData = window.cnmxUsersData || { nonce: '<?php echo is_user_logged_in() ? wp_create_nonce('wp_rest') : ''; ?>' };
+CNMX.Toast.init();
+</script>
 </body>
 </html>

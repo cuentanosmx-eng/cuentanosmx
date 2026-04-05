@@ -8,8 +8,69 @@ if (!defined('ABSPATH')) exit;
 class CNMX_Users_Setup {
     
     public static function activate() {
+        self::create_tables();
         self::create_pages();
         flush_rewrite_rules();
+    }
+    
+    public static function create_tables() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        
+        $tables = array(
+            'cnmx_usuarios_meta' => "CREATE TABLE {$wpdb->prefix}cnmx_usuarios_meta (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                megafonos int(11) DEFAULT 0,
+                nivel varchar(50) DEFAULT 'explorador',
+                ultimos_megafonos longtext,
+                acciones_hoy longtext,
+                fecha_registro datetime DEFAULT CURRENT_TIMESTAMP,
+                ultimo_reset date DEFAULT NULL,
+                PRIMARY KEY (id),
+                UNIQUE KEY user_id (user_id)
+            ) $charset_collate",
+            
+            'cnmx_usuarios_logros' => "CREATE TABLE {$wpdb->prefix}cnmx_usuarios_logros (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                logro_id bigint(20) NOT NULL,
+                fecha datetime DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY user_logro (user_id, logro_id)
+            ) $charset_collate",
+            
+            'cnmx_usuarios_recompensas' => "CREATE TABLE {$wpdb->prefix}cnmx_usuarios_recompensas (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                recompensa_id bigint(20) NOT NULL,
+                fecha_canje datetime DEFAULT CURRENT_TIMESTAMP,
+                codigo varchar(100),
+                usado tinyint(1) DEFAULT 0,
+                PRIMARY KEY (id),
+                UNIQUE KEY user_recompensa (user_id, recompensa_id)
+            ) $charset_collate",
+            
+            'cnmx_historial_puntos' => "CREATE TABLE {$wpdb->prefix}cnmx_historial_puntos (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                tipo varchar(50) NOT NULL,
+                puntos int(11) NOT NULL,
+                descripcion varchar(255),
+                created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY user_id (user_id)
+            ) $charset_collate",
+        );
+        
+        foreach ($tables as $table_name => $sql) {
+            $full_table = $wpdb->prefix . $table_name;
+            if ($wpdb->get_var("SHOW TABLES LIKE '$full_table'") != $full_table) {
+                dbDelta($sql);
+            }
+        }
     }
     
     public static function create_pages() {
@@ -66,7 +127,9 @@ class CNMX_Users_Setup {
         add_action('init', [$this, 'register_pages']);
         add_action('init', [$this, 'ensure_pages_exist']);
         add_filter('query_vars', [$this, 'add_query_vars']);
-        add_filter('template_include', [$this, 'load_template'], 1);
+        
+        add_action('template_redirect', [$this, 'handle_custom_page'], 1);
+        
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         
         add_action('wp_ajax_cnmx_reset_password', [$this, 'handle_reset_password']);
@@ -177,13 +240,30 @@ class CNMX_Users_Setup {
         return $vars;
     }
     
-    public function handle_pages() {
+    public function handle_custom_page() {
         $page = get_query_var('cnmx_page');
         
-        if ($page) {
-            include CNMX_USERS_PATH . 'templates/page-' . $page . '.php';
-            exit;
-        }
+        if (empty($page)) return;
+        
+        $valid_pages = array(
+            'mi-cuenta', 'registro', 'perfil', 'mis-favoritos',
+            'recuperar-contrasena', 'nueva-contrasena'
+        );
+        
+        if (!in_array($page, $valid_pages)) return;
+        
+        $template_file = CNMX_USERS_PATH . 'templates/page-' . $page . '.php';
+        
+        if (!file_exists($template_file)) return;
+        
+        status_header(200);
+        
+        remove_action('template_redirect', 'redirection_template_redirect', 1);
+        
+        nocache_headers();
+        
+        include $template_file;
+        exit;
     }
     
     public function enqueue_scripts() {
