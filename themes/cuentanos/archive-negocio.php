@@ -136,14 +136,43 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .business-img img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
 .business-card:hover .business-img img { transform: scale(1.05); }
 .business-fav {
-    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
-    background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; color: var(--text-muted); backdrop-filter: blur(4px);
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    background: rgba(255,255,255,0.95) !important;
+    border-radius: 50% !important;
+    border: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #6b7280 !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
 }
-.business-fav:hover { background: white; color: var(--text); }
-.business-fav.active { color: #ef4444; }
-.business-fav.active svg { fill: #ef4444; }
-.business-fav svg { width: 16px; height: 16px; }
+.business-fav:hover {
+    background: white !important;
+    color: #1a1a2e !important;
+    transform: scale(1.05) !important;
+}
+.business-fav.active {
+    color: #ef4444 !important;
+    background: white !important;
+}
+.business-fav.active svg {
+    fill: #ef4444 !important;
+}
+.business-fav svg {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0 !important;
+}
 .business-content { padding: 20px; }
 .business-category { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 .business-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
