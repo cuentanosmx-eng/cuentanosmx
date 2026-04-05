@@ -897,6 +897,40 @@ function cnmx_ajax_favorito() {
     }
 }
 
+// Handler para compartir negocio
+add_action('wp_ajax_cnmx_compartir', 'cnmx_ajax_compartir');
+add_action('wp_ajax_nopriv_cnmx_compartir', function() {
+    wp_send_json_error('Debes iniciar sesión');
+});
+
+function cnmx_ajax_compartir() {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'cnmx_nonce')) {
+        wp_send_json_error('Nonce inválido');
+        return;
+    }
+    
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Debes iniciar sesión');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $negocio_id = intval($_POST['negocio_id']);
+    
+    // Dar Megáfonos por compartir (una vez por día)
+    $hoy = date('Y-m-d');
+    $ya_compartio = get_user_meta($user_id, 'cnmx_ultimo_compartir_' . $negocio_id, true);
+    
+    if ($ya_compartio !== $hoy) {
+        $megafonos_compartir = get_option('cnmx_megafonos_compartir', 3);
+        cnmx_add_megafonos($user_id, $megafonos_compartir, 'Compartiste un negocio');
+        update_user_meta($user_id, 'cnmx_ultimo_compartir_' . $negocio_id, $hoy);
+        wp_send_json_success(['message' => 'Megáfonos ganados', 'megafonos' => $megafonos_compartir]);
+    } else {
+        wp_send_json_success(['message' => 'Ya ganaste Megáfonos por compartir hoy']);
+    }
+}
+
 /**
  * Get User Level based on Megafonos
  */

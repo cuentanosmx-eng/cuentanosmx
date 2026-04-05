@@ -292,6 +292,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 </a>
             <?php endif; ?>
             
+            <button class="action-btn" id="btn-share" onclick="compartirNegocio()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Compartir
+            </button>
+            
             <?php if ($sitio_web): ?>
                 <a href="<?php echo esc_url($sitio_web); ?>" target="_blank" class="action-btn">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg>
@@ -505,6 +510,37 @@ document.addEventListener('DOMContentLoaded', function() {
             cnmxToastError('Error de conexión');
         });
     });
+    
+    // Share functionality
+    window.compartirNegocio = function() {
+        const url = window.location.href;
+        const title = document.querySelector('.single-hero-title')?.textContent || 'Mira este negocio';
+        
+        if (navigator.share) {
+            navigator.share({
+                title: title,
+                url: url
+            }).then(() => {
+                fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_compartir', {
+                    method: 'POST',
+                    body: 'negocio_id=<?php echo $negocio_id; ?>&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        cnmxToastSuccess('¡Ganaste Megáfonos por compartir!');
+                    }
+                });
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(url).then(() => {
+                cnmxToastSuccess('¡Enlace copiado! Comparte en redes sociales');
+                fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_compartir', {
+                    method: 'POST',
+                    body: 'negocio_id=<?php echo $negocio_id; ?>&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
+                });
+            });
+        }
+    };
 });
 </script>
 
