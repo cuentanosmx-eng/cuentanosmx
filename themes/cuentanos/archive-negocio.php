@@ -92,11 +92,16 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* HERO */
 .directory-hero {
-    padding: 140px 0 60px; text-align: center;
-    background: linear-gradient(180deg, var(--cream) 0%, white 100%);
+    padding: 160px 0 80px; text-align: center;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)), 
+                url('https://cuentanos.mx/wp-content/uploads/2026/04/HERO.jpg') center/cover no-repeat;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
 }
-.directory-hero h1 { font-size: 40px; font-weight: 800; margin-bottom: 8px; }
-.directory-hero p { font-size: 18px; color: var(--text-light); }
+.directory-hero .container { position: relative; z-index: 1; }
+.directory-hero h1 { font-size: 48px; font-weight: 800; margin-bottom: 12px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.directory-hero p { font-size: 20px; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
 
 /* SEARCH */
 .search-section { padding: 0 0 40px; }
