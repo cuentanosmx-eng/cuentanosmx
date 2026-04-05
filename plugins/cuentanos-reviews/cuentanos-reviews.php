@@ -260,7 +260,12 @@ class CNMX_Reviews {
     }
     
     public function ajax_guardar_resena() {
-        check_ajax_referer('cnmx_reviews_nonce', 'nonce');
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'cnmx_nonce')) {
+            if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'cnmx_reviews_nonce')) {
+                wp_send_json_error('Nonce inválido');
+                return;
+            }
+        }
         
         if (!is_user_logged_in()) {
             wp_send_json_error('Debes iniciar sesión');
