@@ -7,11 +7,13 @@ if (!defined('ABSPATH')) exit;
 
 $categoria = isset($_GET['categoria']) ? sanitize_text_field($_GET['categoria']) : '';
 $busqueda = isset($_GET['buscar']) ? sanitize_text_field($_GET['buscar']) : '';
+$paged = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : (isset($wp_query->query_vars['paged']) ? max(1, intval($wp_query->query_vars['paged'])) : 1);
 
 $args = [
     'post_type' => 'negocio',
     'post_status' => 'publish',
     'posts_per_page' => 12,
+    'paged' => $paged,
 ];
 
 if ($categoria) {
@@ -334,10 +336,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <?php if ($negocios->max_num_pages > 1): ?>
                     <div class="pagination">
                         <?php
+                        $base = home_url('/directorio');
+                        if ($categoria) $base = add_query_arg('categoria', $categoria, $base);
+                        if ($busqueda) $base = add_query_arg('buscar', $busqueda, $base);
+                        
                         echo paginate_links([
-                            'base' => add_query_arg('pagina', '%#%'),
-                            'format' => '?pagina=%#%',
-                            'current' => max(1, get_query_var('paged')),
+                            'base' => trailingslashit($base) . 'pagina/%#%/',
+                            'format' => '',
+                            'current' => $paged,
                             'total' => $negocios->max_num_pages,
                             'prev_text' => '← Anterior',
                             'next_text' => 'Siguiente →',

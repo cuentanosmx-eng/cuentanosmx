@@ -42,6 +42,25 @@ $user_recompensas = $wpdb->get_results($wpdb->prepare(
 $favoritos_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d", $user_id));
 $resenas_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_resenas WHERE user_id = %d", $user_id));
 
+// Get favorites list directly from PHP
+$favoritos_lista = $wpdb->get_results($wpdb->prepare(
+    "SELECT f.*, p.post_title, p.guid as post_url 
+     FROM {$wpdb->prefix}cnmx_favoritos f 
+     LEFT JOIN {$wpdb->posts} p ON p.ID = f.negocio_id 
+     WHERE f.user_id = %d 
+     ORDER BY f.fecha DESC",
+    $user_id
+));
+
+// Get negocio data for each favorite
+foreach ($favoritos_lista as &$fav) {
+    if ($fav->negocio_id) {
+        $cats = get_the_terms($fav->negocio_id, 'categoria');
+        $fav->categoria = $cats && !is_wp_error($cats) ? $cats[0]->name : 'General';
+        $fav->imagen = get_the_post_thumbnail_url($fav->negocio_id, 'thumbnail') ?: '';
+    }
+}
+
 // Level config
 $niveles = [
     'explorador' => ['min' => 0, 'max' => 50, 'icon' => '🔍', 'label' => 'Explorador', 'color' => '#6B7280'],
@@ -927,10 +946,29 @@ body {
                 <h2 class="section-title"><span class="icon">❤️</span> Mis Favoritos</h2>
             </div>
             <div class="favorites-list" id="favorites-list">
-                <div class="empty-state">
-                    <div class="icon">❤️</div>
-                    <p>Cargando favoritos...</p>
-                </div>
+                <?php if (!empty($favoritos_lista)): ?>
+                    <?php foreach ($favoritos_lista as $fav): ?>
+                        <a href="<?php echo esc_url($fav->post_url ?: '/'); ?>" class="favorite-card">
+                            <div class="favorite-img">
+                                <?php if ($fav->imagen): ?>
+                                    <img src="<?php echo esc_url($fav->imagen); ?>" alt="">
+                                <?php else: ?>
+                                    📍
+                                <?php endif; ?>
+                            </div>
+                            <div class="favorite-info">
+                                <div class="favorite-name"><?php echo esc_html($fav->post_title ?: 'Negocio'); ?></div>
+                                <div class="favorite-cat"><?php echo esc_html($fav->categoria ?: 'Negocio local'); ?></div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <div class="icon">❤️</div>
+                        <p>No tienes favoritos aún</p>
+                        <a href="<?php echo home_url('/negocio'); ?>" style="color: var(--primary); margin-top: 12px; display: inline-block;">Explorar negocios</a>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
     </div>
@@ -974,32 +1012,8 @@ function switchTab(tabId) {
     document.getElementById('tab-' + tabId).classList.add('active');
 }
 
-// Load favorites
-fetch('/wp-json/cuentanos/v1/favoritos', {
-    headers: {
-        'X-WP-Nonce': cnmxUsersData.nonce
-    }
-})
-.then(r => r.json())
-.then(data => {
-    const list = document.getElementById('favorites-list');
-    if (data.favoritos && data.favoritos.length > 0) {
-        list.innerHTML = data.favoritos.map(fav => `
-            <a href="${fav.post_url}" class="favorite-card">
-                <div class="favorite-img">📍</div>
-                <div class="favorite-info">
-                    <div class="favorite-name">${fav.post_title}</div>
-                    <div class="favorite-cat">Negocio local</div>
-                </div>
-            </a>
-        `).join('');
-    } else {
-        list.innerHTML = '<div class="empty-state"><div class="icon">❤️</div><p>No tienes favoritos aún</p></div>';
-    }
-})
-.catch(() => {
-    document.getElementById('favorites-list').innerHTML = '<div class="empty-state"><div class="icon">❤️</div><p>Error al cargar favoritos</p></div>';
-});
+// Redeem reward
+
 
 // Redeem reward
 function canjearRecompensa(id, costo) {

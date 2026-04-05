@@ -148,6 +148,37 @@ function cnmx_enqueue_scripts() {
 add_action('wp_enqueue_scripts', 'cnmx_enqueue_scripts', 20);
 
 /**
+ * Rewrite rules for custom pages
+ */
+function cnmx_custom_rewrite() {
+    add_rewrite_rule('^directorio/?$', 'index.php?cnmx_directorio=1', 'top');
+    add_rewrite_rule('^directorio/page/?([0-9]{1,})/?$', 'index.php?cnmx_directorio=1&paged=$matches[1]', 'top');
+}
+add_action('init', 'cnmx_custom_rewrite');
+
+function cnmx_query_vars($vars) {
+    $vars[] = 'cnmx_directorio';
+    return $vars;
+}
+add_filter('query_vars', 'cnmx_query_vars');
+
+function cnmx_template_redirect() {
+    global $wp_query;
+    
+    if (isset($wp_query->query_vars['cnmx_directorio'])) {
+        $template = CNMX_PATH . '/archive-negocio.php';
+        
+        if (file_exists($template)) {
+            status_header(200);
+            nocache_headers();
+            include $template;
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'cnmx_template_redirect', 1);
+
+/**
  * Theme Setup
  */
 function cnmx_setup() {

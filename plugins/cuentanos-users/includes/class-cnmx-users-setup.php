@@ -63,6 +63,17 @@ class CNMX_Users_Setup {
                 PRIMARY KEY (id),
                 KEY user_id (user_id)
             ) $charset_collate",
+            
+            'cnmx_favoritos' => "CREATE TABLE {$wpdb->prefix}cnmx_favoritos (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                negocio_id bigint(20) NOT NULL,
+                fecha datetime DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                UNIQUE KEY user_negocio (user_id, negocio_id),
+                KEY user_id (user_id),
+                KEY negocio_id (negocio_id)
+            ) $charset_collate",
         );
         
         foreach ($tables as $table_name => $sql) {

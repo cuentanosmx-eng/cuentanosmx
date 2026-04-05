@@ -219,7 +219,7 @@ class CNMX_Users_REST_API {
         $table = $wpdb->prefix . 'cnmx_favoritos';
         
         $favoritos = $wpdb->get_results($wpdb->prepare(
-            "SELECT f.*, p.post_title, p.guid as post_url 
+            "SELECT f.*, p.post_title, p.post_name 
              FROM {$table} f 
              LEFT JOIN {$wpdb->posts} p ON p.ID = f.negocio_id 
              WHERE f.user_id = %d 
@@ -227,16 +227,27 @@ class CNMX_Users_REST_API {
             $user_id
         ));
         
-        // Get negocio data for each favorite
-        foreach ($favoritos as &$fav) {
-            if ($fav->negocio_id) {
+        $result = [];
+        foreach ($favoritos as $fav) {
+            if ($fav->negocio_id && $fav->post_title) {
                 $categoria = get_the_terms($fav->negocio_id, 'categoria');
-                $fav->categoria = $categoria && !is_wp_error($categoria) ? $categoria[0]->name : 'General';
-                $fav->imagen = get_the_post_thumbnail_url($fav->negocio_id, 'thumbnail') ?: '';
+                $cats = get_the_terms($fav->negocio_id, 'categoria');
+                
+                $result[] = [
+                    'negocio_id' => $fav->negocio_id,
+                    'titulo' => $fav->post_title,
+                    'url' => get_permalink($fav->negocio_id),
+                    'categoria' => $cats && !is_wp_error($cats) ? $cats[0]->name : 'General',
+                    'imagen' => get_the_post_thumbnail_url($fav->negocio_id, 'medium') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop',
+                    'rating' => floatval(get_post_meta($fav->negocio_id, 'cnmx_rating', true) ?: 0),
+                    'resenas' => intval(get_post_meta($fav->negocio_id, 'cnmx_reviews_count', true) ?: 0),
+                    'direccion' => get_post_meta($fav->negocio_id, 'cnmx_direccion', true) ?: '',
+                    'fecha' => $fav->fecha,
+                ];
             }
         }
         
-        return ['favoritos' => $favoritos];
+        return ['success' => true, 'data' => $result];
     }
     
     public function get_megafonos($request) {
