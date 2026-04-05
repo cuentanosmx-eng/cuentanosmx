@@ -12,6 +12,36 @@ class CNMX_Users_Setup {
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_action('template_redirect', [$this, 'handle_pages']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+        
+        add_action('wp_ajax_cnmx_reset_password', [$this, 'handle_reset_password']);
+        add_action('wp_ajax_nopriv_cnmx_reset_password', [$this, 'handle_reset_password']);
+    }
+    
+    public function handle_reset_password() {
+        $email = sanitize_email($_POST['email'] ?? '');
+        
+        if (empty($email) || !is_email($email)) {
+            wp_send_json_error(['message' => 'Email inválido']);
+        }
+        
+        $user = get_user_by('email', $email);
+        
+        if ($user) {
+            $key = get_password_reset_key($user);
+            $reset_url = home_url('/mi-cuenta') . '?action=rp&key=' . $key . '&login=' . rawurlencode($user->user_login);
+            
+            $to = $email;
+            $subject = 'Restablecer contraseña - Cuentanos.mx';
+            $message = 'Hola ' . $user->display_name . ",\n\n";
+            $message .= 'Haz clic en el siguiente enlace para restablecer tu contraseña:\n';
+            $message .= $reset_url . "\n\n";
+            $message .= 'Si no solicitaste este cambio, ignora este email.';
+            
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            wp_mail($to, $subject, nl2br($message), $headers);
+        }
+        
+        wp_send_json_success(['message' => 'Email enviado (si existe la cuenta)']);
     }
     
     public function register_pages() {
@@ -19,6 +49,8 @@ class CNMX_Users_Setup {
         add_rewrite_rule('^registro/?$', 'index.php?cnmx_page=registro', 'top');
         add_rewrite_rule('^perfil/?$', 'index.php?cnmx_page=perfil', 'top');
         add_rewrite_rule('^mis-favoritos/?$', 'index.php?cnmx_page=mis-favoritos', 'top');
+        add_rewrite_rule('^recuperar-contrasena/?$', 'index.php?cnmx_page=recuperar-contrasena', 'top');
+        add_rewrite_rule('^nueva-contrasena/?$', 'index.php?cnmx_page=nueva-contrasena', 'top');
     }
     
     public function add_query_vars($vars) {

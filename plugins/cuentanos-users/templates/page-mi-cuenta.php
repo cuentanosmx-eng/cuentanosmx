@@ -60,7 +60,7 @@
                     <span class="btn-loading">Entrando...</span>
                 </button>
                 
-                <a href="#" class="cnmx-forgot-link">¿Olvidaste tu contraseña?</a>
+                <a href="<?php echo home_url('/recuperar-contrasena'); ?>" class="cnmx-forgot-link">¿Olvidaste tu contraseña?</a>
             </form>
             
             <p class="cnmx-users-footer">
