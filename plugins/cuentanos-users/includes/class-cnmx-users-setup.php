@@ -8,7 +8,50 @@ if (!defined('ABSPATH')) exit;
 class CNMX_Users_Setup {
     
     public static function activate() {
+        self::create_pages();
         flush_rewrite_rules();
+    }
+    
+    public static function create_pages() {
+        $pages = array(
+            'mi-cuenta' => array(
+                'title' => 'Mi Cuenta',
+                'template' => 'page-mi-cuenta.php'
+            ),
+            'registro' => array(
+                'title' => 'Registro',
+                'template' => 'page-registro.php'
+            ),
+            'perfil' => array(
+                'title' => 'Mi Perfil',
+                'template' => 'page-perfil.php'
+            ),
+            'mis-favoritos' => array(
+                'title' => 'Mis Favoritos',
+                'template' => 'page-mis-favoritos.php'
+            ),
+            'recuperar-contrasena' => array(
+                'title' => 'Recuperar Contraseña',
+                'template' => 'page-recuperar-contrasena.php'
+            ),
+            'nueva-contrasena' => array(
+                'title' => 'Nueva Contraseña',
+                'template' => 'page-nueva-contrasena.php'
+            ),
+        );
+        
+        foreach ($pages as $slug => $page) {
+            $existing = get_page_by_path($slug);
+            if (!$existing) {
+                wp_insert_post(array(
+                    'post_type' => 'page',
+                    'post_title' => $page['title'],
+                    'post_name' => $slug,
+                    'post_status' => 'publish',
+                    'page_template' => $page['template']
+                ));
+            }
+        }
     }
     
     public function maybe_flush_rules() {
@@ -21,8 +64,9 @@ class CNMX_Users_Setup {
     public function __construct() {
         add_action('init', [$this, 'maybe_flush_rules']);
         add_action('init', [$this, 'register_pages']);
+        add_action('init', [$this, 'ensure_pages_exist']);
         add_filter('query_vars', [$this, 'add_query_vars']);
-        add_action('template_redirect', [$this, 'handle_pages']);
+        add_filter('template_include', [$this, 'load_template']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         
         add_action('wp_ajax_cnmx_reset_password', [$this, 'handle_reset_password']);
@@ -30,6 +74,37 @@ class CNMX_Users_Setup {
         
         add_action('wp_ajax_cnmx_set_new_password', [$this, 'handle_set_new_password']);
         add_action('wp_ajax_nopriv_cnmx_set_new_password', [$this, 'handle_set_new_password']);
+    }
+    
+    public function ensure_pages_exist() {
+        if (get_option('cnmx_users_pages_created') !== '1') {
+            self::create_pages();
+            update_option('cnmx_users_pages_created', '1');
+        }
+    }
+    
+    public function load_template($template) {
+        global $post;
+        
+        $template_map = array(
+            'page-mi-cuenta.php' => 'mi-cuenta',
+            'page-registro.php' => 'registro',
+            'page-perfil.php' => 'perfil',
+            'page-mis-favoritos.php' => 'mis-favoritos',
+            'page-recuperar-contrasena.php' => 'recuperar-contrasena',
+            'page-nueva-contrasena.php' => 'nueva-contrasena',
+        );
+        
+        if ($post && isset($template_map[$post->page_template])) {
+            $slug = $template_map[$post->page_template];
+            $custom_template = CNMX_USERS_PATH . 'templates/page-' . $slug . '.php';
+            
+            if (file_exists($custom_template)) {
+                return $custom_template;
+            }
+        }
+        
+        return $template;
     }
     
     public function handle_set_new_password() {
@@ -110,9 +185,11 @@ class CNMX_Users_Setup {
         wp_enqueue_style('cnmx-users-css', CNMX_USERS_URL . 'assets/css/users.css', [], CNMX_USERS_VERSION);
         wp_enqueue_script('cnmx-users-js', CNMX_USERS_URL . 'assets/js/users.js', ['jquery'], CNMX_USERS_VERSION, true);
         
+        $nonce = is_user_logged_in() ? wp_create_nonce('wp_rest') : '';
+        
         wp_localize_script('cnmx-users-js', 'cnmxUsersData', [
             'apiUrl' => rest_url('cuentanos/v1'),
-            'nonce' => wp_create_nonce('wp_rest'),
+            'nonce' => $nonce,
             'isLoggedIn' => is_user_logged_in(),
             'userId' => get_current_user_id(),
             'homeUrl' => home_url(),
