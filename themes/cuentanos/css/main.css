@@ -690,26 +690,33 @@ h6 { font-size: var(--font-size-base); }
     position: absolute;
     top: var(--space-md);
     right: var(--space-md);
-    width: 36px;
-    height: 36px;
-    background: var(--brand-white);
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.9);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(4px);
     transition: var(--transition);
 }
 
 .business-card-fav svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     color: var(--gray-400);
+}
+
+.business-card-fav:hover {
+    background: white;
 }
 
 .business-card-fav:hover svg,
 .business-card-fav.active svg {
     color: var(--brand-coral);
+}
+
+.business-card-fav.active svg {
     fill: var(--brand-coral);
 }
 

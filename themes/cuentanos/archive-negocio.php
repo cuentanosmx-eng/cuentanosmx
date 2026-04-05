@@ -132,12 +132,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .business-img img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
 .business-card:hover .business-img img { transform: scale(1.05); }
 .business-fav {
-    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px;
-    background: white; border-radius: 50%; display: flex; align-items: center;
-    justify-content: center; box-shadow: var(--shadow); color: var(--text-muted);
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); backdrop-filter: blur(4px);
 }
+.business-fav:hover { background: white; color: var(--text); }
 .business-fav.active { color: #ef4444; }
-.business-fav svg { width: 18px; height: 18px; }
+.business-fav.active svg { fill: #ef4444; }
+.business-fav svg { width: 16px; height: 16px; }
 .business-content { padding: 20px; }
 .business-category { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 .business-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
