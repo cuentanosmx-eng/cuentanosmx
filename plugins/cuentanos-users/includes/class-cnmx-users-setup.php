@@ -66,7 +66,7 @@ class CNMX_Users_Setup {
         add_action('init', [$this, 'register_pages']);
         add_action('init', [$this, 'ensure_pages_exist']);
         add_filter('query_vars', [$this, 'add_query_vars']);
-        add_filter('template_include', [$this, 'load_template']);
+        add_filter('template_include', [$this, 'load_template'], 1);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         
         add_action('wp_ajax_cnmx_reset_password', [$this, 'handle_reset_password']);
