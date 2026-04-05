@@ -841,10 +841,16 @@ add_action('wp_ajax_nopriv_cnmx_favorito', function() {
 });
 
 function cnmx_ajax_favorito() {
-    check_ajax_referer('cnmx_nonce');
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'cnmx_nonce')) {
+        if (!isset($_REQUEST['nonce']) || !wp_verify_nonce($_REQUEST['nonce'], 'cnmx_nonce')) {
+            wp_send_json_error('Nonce inválido');
+            return;
+        }
+    }
     
     if (!is_user_logged_in()) {
         wp_send_json_error('Debes iniciar sesión');
+        return;
     }
     
     $negocio_id = intval($_POST['negocio_id']);
