@@ -687,36 +687,48 @@ h6 { font-size: var(--font-size-base); }
 }
 
 .business-card-fav {
-    position: absolute;
-    top: var(--space-md);
-    right: var(--space-md);
-    width: 28px;
-    height: 28px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    transition: var(--transition);
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    background: #FFFFFF !important;
+    border-radius: 50% !important;
+    border: none !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
 }
 
 .business-card-fav svg {
-    width: 16px;
-    height: 16px;
-    color: var(--gray-400);
+    width: 16px !important;
+    height: 16px !important;
+    color: #9CA3AF !important;
+    flex-shrink: 0 !important;
 }
 
 .business-card-fav:hover {
-    background: white;
+    background: #FFFFFF !important;
+    transform: scale(1.05) !important;
 }
 
 .business-card-fav:hover svg,
 .business-card-fav.active svg {
-    color: var(--brand-coral);
+    color: #ef4444 !important;
 }
 
 .business-card-fav.active svg {
+    fill: #ef4444 !important;
+}
+
+.business-card-fav.active {
     fill: var(--brand-coral);
 }
 
