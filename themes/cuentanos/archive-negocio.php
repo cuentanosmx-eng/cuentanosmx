@@ -6,7 +6,7 @@
 if (!defined('ABSPATH')) exit;
 
 $categoria = isset($_GET['categoria']) ? sanitize_text_field($_GET['categoria']) : '';
-$busqueda = isset($_GET['buscar']) ? sanitize_text_field($_GET['buscar']) : '';
+$busqueda = isset($_GET['buscar']) ? sanitize_text_field($_GET['buscar']) : (isset($_GET['q']) ? sanitize_text_field($_GET['q']) : '');
 $paged = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : (isset($wp_query->query_vars['paged']) ? max(1, intval($wp_query->query_vars['paged'])) : 1);
 
 $args = [
@@ -16,7 +16,7 @@ $args = [
     'paged' => $paged,
 ];
 
-if ($categoria) {
+if (!empty($categoria)) {
     $args['tax_query'] = [['taxonomy' => 'categoria', 'field' => 'slug', 'terms' => $categoria]];
 }
 if ($busqueda) {
