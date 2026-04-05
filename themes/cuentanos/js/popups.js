@@ -157,6 +157,10 @@ window.cnmxToast = CNMX.Toast.show.bind(CNMX.Toast);
 window.cnmxToastSuccess = CNMX.Toast.success.bind(CNMX.Toast);
 window.cnmxToastError = CNMX.Toast.error.bind(CNMX.Toast);
 window.cnmxModal = CNMX.Modal.show.bind(CNMX.Modal);
+
+// Global CNMX object for compatibility
+window.CNMX = window.CNMX || {};
+window.CNMX.showToast = CNMX.Toast.show.bind(CNMX.Toast);
 window.cnmxModalConfirm = CNMX.Modal.confirm.bind(CNMX.Modal);
 window.cnmxModalAlert = CNMX.Modal.alert.bind(CNMX.Modal);
 

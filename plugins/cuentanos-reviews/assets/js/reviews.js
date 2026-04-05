@@ -12,6 +12,16 @@
         initFormResena();
     });
     
+    function showToast(type, title, msg) {
+        if (window.cnmxToast) {
+            window.cnmxToast({ type: type, title: title, message: msg });
+        } else if (window.CNMX && CNMX.Toast) {
+            CNMX.Toast.show({ type: type, title: title, message: msg });
+        } else {
+            alert(title + ': ' + msg);
+        }
+    }
+    
     function initReacciones() {
         $(document).on('click', '.reaccion-btn', function(e) {
             e.preventDefault();
@@ -35,7 +45,7 @@
                     }
                 },
                 error: function() {
-                    alert('Error al procesar la reacción');
+                    showToast('error', 'Error', 'No se pudo procesar la reacción');
                 }
             });
         });
@@ -47,11 +57,10 @@
         
         if (data.action === 'added') {
             $btn.addClass('active');
+            showToast('success', 'Guardado', 'Reacción guardada');
         } else {
             $btn.removeClass('active');
         }
-        
-        location.reload();
     }
     
     function initFormResena() {
@@ -111,7 +120,7 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        alert('¡Reseña publicada correctamente!');
+                        showToast('success', '¡Listo!', 'Tu reseña ha sido publicada');
                         $form[0].reset();
                         fotoUrls = [];
                         renderFotoPreview();
@@ -120,11 +129,11 @@
                         $('#resena-rating-value').val(5);
                         location.reload();
                     } else {
-                        alert(response.data || 'Error al guardar la reseña');
+                        showToast('error', 'Error', response.data || 'No se pudo guardar la reseña');
                     }
                 },
                 error: function() {
-                    alert('Error al procesar la solicitud');
+                    showToast('error', 'Error', 'No se pudo procesar la solicitud');
                 },
                 complete: function() {
                     $submitBtn.text(originalText).prop('disabled', false);
@@ -137,7 +146,7 @@
         if (!file) return;
         
         if (!file.type.match('image.*')) {
-            alert('Por favor selecciona una imagen');
+            showToast('error', 'Error', 'Selecciona una imagen válida');
             return;
         }
         
@@ -157,12 +166,13 @@
                     fotoUrls.push(response.data.url);
                     renderFotoPreview();
                     updateFotosInput();
+                    showToast('success', '¡Foto agregada!', 'Imagen subida correctamente');
                 } else {
-                    alert(response.data || 'Error al subir la imagen');
+                    showToast('error', 'Error', response.data || 'No se pudo subir la imagen');
                 }
             },
             error: function() {
-                alert('Error al subir la imagen');
+                showToast('error', 'Error', 'No se pudo subir la imagen');
             }
         });
     }
