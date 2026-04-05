@@ -56,6 +56,12 @@ class CNMX_Users_REST_API {
             'permission_callback' => [$this, 'check_auth'],
         ]);
         
+        register_rest_route($this->namespace, '/usuario/resenas', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_resenas_usuario'],
+            'permission_callback' => [$this, 'check_auth'],
+        ]);
+        
         register_rest_route($this->namespace, '/recompensas', [
             'methods' => 'GET',
             'callback' => [$this, 'get_recompensas'],
@@ -215,11 +221,20 @@ class CNMX_Users_REST_API {
         $favoritos = $wpdb->get_results($wpdb->prepare(
             "SELECT f.*, p.post_title, p.guid as post_url 
              FROM {$table} f 
-             JOIN {$wpdb->posts} p ON p.ID = f.negocio_id 
+             LEFT JOIN {$wpdb->posts} p ON p.ID = f.negocio_id 
              WHERE f.user_id = %d 
              ORDER BY f.fecha DESC",
             $user_id
         ));
+        
+        // Get negocio data for each favorite
+        foreach ($favoritos as &$fav) {
+            if ($fav->negocio_id) {
+                $categoria = get_the_terms($fav->negocio_id, 'categoria');
+                $fav->categoria = $categoria && !is_wp_error($categoria) ? $categoria[0]->name : 'General';
+                $fav->imagen = get_the_post_thumbnail_url($fav->negocio_id, 'thumbnail') ?: '';
+            }
+        }
         
         return ['favoritos' => $favoritos];
     }
@@ -258,6 +273,24 @@ class CNMX_Users_REST_API {
         }
         
         return ['logros' => $resultados];
+    }
+    
+    public function get_resenas_usuario($request) {
+        global $wpdb;
+        $user_id = get_current_user_id();
+        $table = $wpdb->prefix . 'cnmx_resenas';
+        
+        $resenas = $wpdb->get_results($wpdb->prepare(
+            "SELECT r.*, p.post_title as negocio_nombre, p.guid as negocio_url 
+             FROM {$table} r 
+             LEFT JOIN {$wpdb->posts} p ON p.ID = r.negocio_id 
+             WHERE r.user_id = %d 
+             ORDER BY r.fecha DESC 
+             LIMIT 50",
+            $user_id
+        ));
+        
+        return ['resenas' => $resenas];
     }
     
     private function init_user_meta($user_id) {
