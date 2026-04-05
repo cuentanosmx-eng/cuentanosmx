@@ -77,7 +77,7 @@ $recompensas_posts = get_posts([
     'post_status' => 'publish',
     'posts_per_page' => -1,
     'orderby' => 'meta_value_num',
-    'meta_key' => 'cnmx_costo',
+    'meta_key' => 'cnmx_recompensa_megafonos',
 ]);
 
 // Get all logros from CPT
@@ -87,28 +87,16 @@ $logros_posts = get_posts([
     'posts_per_page' => -1,
 ]);
 
-// Group rewards by level
-$recompensas_por_nivel = [];
-foreach ($recompensas_posts as $rec) {
-    $costo = get_post_meta($rec->ID, 'cnmx_costo', true) ?: 0;
-    $nivel_requerido = 'intermedio';
-    if ($costo <= 50) $nivel_requerido = 'principiante';
-    elseif ($costo <= 100) $nivel_requerido = 'intermedio';
-    elseif ($costo <= 200) $nivel_requerido = 'avanzado';
-    elseif ($costo <= 500) $nivel_requerido = 'experto';
-    else $nivel_requerido = 'leyenda';
-    
-    if (!isset($recompensas_por_nivel[$nivel_requerido])) {
-        $recompensas_por_nivel[$nivel_requerido] = [];
-    }
-    $recompensas_por_nivel[$nivel_requerido][] = [
-        'id' => $rec->ID,
-        'title' => $rec->post_title,
-        'description' => $rec->post_content,
-        'costo' => $costo,
-        'imagen' => get_the_post_thumbnail_url($rec->ID, 'medium') ?: 'https://via.placeholder.com/200x150?text=Recompensa',
-    ];
-}
+// Get user reviews from custom table
+$user_resenas = $wpdb->get_results($wpdb->prepare(
+    "SELECT r.*, p.post_title as negocio_nombre, p.guid as negocio_url 
+     FROM {$wpdb->prefix}cnmx_resenas r 
+     LEFT JOIN {$wpdb->prefix}posts p ON p.ID = r.negocio_id 
+     WHERE r.user_id = %d 
+     ORDER BY r.fecha DESC 
+     LIMIT 20",
+    $user_id
+));
 ?>
 
 <style>
@@ -484,11 +472,58 @@ body {
     color: var(--text-light);
 }
 
-.achievement-status {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 16px;
+.achievement-megafonos {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Reviews List */
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.review-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.review-business {
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.review-business:hover {
+    color: var(--primary);
+}
+
+.review-stars {
+    color: #F59E0B;
+    font-size: 14px;
+}
+
+.review-body {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.review-date {
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
 /* Favorites List */
@@ -747,6 +782,7 @@ body {
         <button class="tab active" data-tab="resumen">Resumen</button>
         <button class="tab" data-tab="recompensas">Recompensas</button>
         <button class="tab" data-tab="logros">Logros</button>
+        <button class="tab" data-tab="resenas">Reseñas</button>
         <button class="tab" data-tab="favoritos">Favoritos</button>
     </div>
 
@@ -780,7 +816,7 @@ body {
             <?php if (!empty($recompensas_posts)): ?>
             <div class="rewards-grid">
                 <?php foreach ($recompensas_posts as $rec): 
-                    $costo = get_post_meta($rec->ID, 'cnmx_costo', true) ?: 0;
+                    $costo = get_post_meta($rec->ID, 'cnmx_recompensa_megafonos', true) ?: 100;
                     $unlocked = $megafonos >= $costo;
                     $canjeado = in_array($rec->ID, array_column($user_recompensas, 'recompensa_id'));
                 ?>
@@ -830,12 +866,15 @@ body {
             <div class="achievements-grid">
                 <?php foreach ($logros_posts as $logro): 
                     $unlocked = in_array($logro->ID, $user_logros);
+                    $megafonos_otorga = get_post_meta($logro->ID, 'cnmx_logro_megafonos', true) ?: 10;
+                    $logro_icono = get_post_meta($logro->ID, 'cnmx_logro_icono', true) ?: ($unlocked ? '🏆' : '🔒');
                 ?>
                 <div class="achievement-card <?php echo $unlocked ? 'unlocked' : 'locked'; ?>">
                     <div class="achievement-status"><?php echo $unlocked ? '✅' : '🔒'; ?></div>
-                    <div class="achievement-icon"><?php echo $unlocked ? '🏆' : '🔒'; ?></div>
+                    <div class="achievement-icon"><?php echo esc_html($logro_icono); ?></div>
                     <div class="achievement-name"><?php echo esc_html($logro->post_title); ?></div>
                     <div class="achievement-desc"><?php echo esc_html($logro->post_content ?: 'Completa acciones para desbloquear'); ?></div>
+                    <div class="achievement-megafonos">📣 +<?php echo number_format($megafonos_otorga); ?></div>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -843,6 +882,39 @@ body {
             <div class="empty-state">
                 <div class="icon">🏆</div>
                 <p>Próximamente habrá logros disponibles</p>
+            </div>
+            <?php endif; ?>
+        </section>
+    </div>
+
+    <!-- Reviews Tab -->
+    <div class="tab-content" id="tab-resenas">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title"><span class="icon">⭐</span> Mis Reseñas</h2>
+            </div>
+            <?php if (!empty($user_resenas)): ?>
+            <div class="reviews-grid">
+                <?php foreach ($user_resenas as $resena): ?>
+                <div class="review-card">
+                    <div class="review-header">
+                        <a href="<?php echo esc_url($resena->negocio_url); ?>" class="review-business">
+                            <?php echo esc_html($resena->negocio_nombre ?: 'Negocio'); ?>
+                        </a>
+                        <span class="review-stars">
+                            <?php echo str_repeat('★', $resena->calificacion); ?><?php echo str_repeat('☆', 5 - $resena->calificacion); ?>
+                        </span>
+                    </div>
+                    <p class="review-body"><?php echo esc_html($resena->contenido); ?></p>
+                    <span class="review-date"><?php echo date('d M Y', strtotime($resena->fecha)); ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div class="empty-state">
+                <div class="icon">⭐</div>
+                <p>No has escrito ninguna reseña aún</p>
+                <a href="<?php echo home_url('/negocio'); ?>" style="color: var(--primary);">Explorar negocios y escribir mi primera reseña</a>
             </div>
             <?php endif; ?>
         </section>
