@@ -17,62 +17,113 @@ if (!is_user_logged_in()) {
 $user_id = get_current_user_id();
 $user = wp_get_current_user();
 $avatar = get_avatar_url($user_id, ['size' => 120]);
-$megafonos = 0;
-$nivel = 'explorador';
 
 global $wpdb;
+
+// Get user data
 $meta_table = $wpdb->prefix . 'cnmx_usuarios_meta';
 $meta = $wpdb->get_row($wpdb->prepare("SELECT * FROM $meta_table WHERE user_id = %d", $user_id));
-if ($meta) {
-    $megafonos = $meta->megafonos;
-    $nivel = $meta->nivel;
-}
+$megafonos = $meta ? $meta->megafonos : 0;
+$nivel_actual = $meta ? $meta->nivel : 'explorador';
+
+// Get user achievements/logros
+$user_logros = $wpdb->get_col($wpdb->prepare(
+    "SELECT logro_id FROM {$wpdb->prefix}cnmx_usuarios_logros WHERE user_id = %d",
+    $user_id
+));
+
+// Get user rewards
+$user_recompensas = $wpdb->get_results($wpdb->prepare(
+    "SELECT * FROM {$wpdb->prefix}cnmx_usuarios_recompensas WHERE user_id = %d",
+    $user_id
+));
 
 // Stats
 $favoritos_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d", $user_id));
 $resenas_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_resenas WHERE user_id = %d", $user_id));
-$logros_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_usuarios_logros WHERE user_id = %d", $user_id));
 
-$nivel_icons = [
-    'explorador' => '🔍',
-    'principiante' => '🌱',
-    'intermedio' => '⭐',
-    'avanzado' => '🌟',
-    'experto' => '🏆',
-    'leyenda' => '👑'
+// Level config
+$niveles = [
+    'explorador' => ['min' => 0, 'max' => 50, 'icon' => '🔍', 'label' => 'Explorador', 'color' => '#6B7280'],
+    'principiante' => ['min' => 50, 'max' => 100, 'icon' => '🌱', 'label' => 'Principiante', 'color' => '#10B981'],
+    'intermedio' => ['min' => 100, 'max' => 200, 'icon' => '⭐', 'label' => 'Intermedio', 'color' => '#F59E0B'],
+    'avanzado' => ['min' => 200, 'max' => 500, 'icon' => '🌟', 'label' => 'Avanzado', 'color' => '#3B82F6'],
+    'experto' => ['min' => 500, 'max' => 1000, 'icon' => '🏆', 'label' => 'Experto', 'color' => '#8B5CF6'],
+    'leyenda' => ['min' => 1000, 'max' => 99999, 'icon' => '👑', 'label' => 'Leyenda', 'color' => '#EB510C']
 ];
 
-$nivel_labels = [
-    'explorador' => 'Explorador',
-    'principiante' => 'Principiante',
-    'intermedio' => 'Intermedio',
-    'avanzado' => 'Avanzado',
-    'experto' => 'Experto',
-    'leyenda' => 'Leyenda'
-];
+// Get next level
+$current_nivel_data = $niveles[$nivel_actual] ?? $niveles['explorador'];
+$next_level = null;
+$next_level_megafonos = $current_nivel_data['max'];
+foreach ($niveles as $key => $data) {
+    if ($data['min'] > $megafonos) {
+        $next_level = ['key' => $key, 'data' => $data];
+        break;
+    }
+}
 
-$next_nivel_megafonos = [
-    'explorador' => 50,
-    'principiante' => 100,
-    'intermedio' => 200,
-    'avanzado' => 500,
-    'experto' => 1000,
-    'leyenda' => 999999
-];
+// Progress percentage
+$progress_in_level = 0;
+if ($next_level) {
+    $progress_in_level = (($megafonos - $current_nivel_data['min']) / ($next_level['data']['min'] - $current_nivel_data['min'])) * 100;
+} else {
+    $progress_in_level = 100;
+}
+
+// Get all rewards from CPT
+$recompensas_posts = get_posts([
+    'post_type' => 'cnmx_recompensa',
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+    'orderby' => 'meta_value_num',
+    'meta_key' => 'cnmx_costo',
+]);
+
+// Get all logros from CPT
+$logros_posts = get_posts([
+    'post_type' => 'cnmx_logro',
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+]);
+
+// Group rewards by level
+$recompensas_por_nivel = [];
+foreach ($recompensas_posts as $rec) {
+    $costo = get_post_meta($rec->ID, 'cnmx_costo', true) ?: 0;
+    $nivel_requerido = 'intermedio';
+    if ($costo <= 50) $nivel_requerido = 'principiante';
+    elseif ($costo <= 100) $nivel_requerido = 'intermedio';
+    elseif ($costo <= 200) $nivel_requerido = 'avanzado';
+    elseif ($costo <= 500) $nivel_requerido = 'experto';
+    else $nivel_requerido = 'leyenda';
+    
+    if (!isset($recompensas_por_nivel[$nivel_requerido])) {
+        $recompensas_por_nivel[$nivel_requerido] = [];
+    }
+    $recompensas_por_nivel[$nivel_requerido][] = [
+        'id' => $rec->ID,
+        'title' => $rec->post_title,
+        'description' => $rec->post_content,
+        'costo' => $costo,
+        'imagen' => get_the_post_thumbnail_url($rec->ID, 'medium') ?: 'https://via.placeholder.com/200x150?text=Recompensa',
+    ];
+}
 ?>
 
 <style>
 :root {
     --primary: #EB510C;
-    --primary-dark: #D44A0B;
+    --primary-light: #FF7B3D;
+    --secondary: #F89D2F;
     --bg: #FFFCF8;
     --card: #FFFFFF;
     --text: #1A1A1A;
     --text-light: #717171;
     --text-muted: #9CA3AF;
     --border: #E5E7EB;
-    --radius: 16px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --success: #10B981;
+    --warning: #F59E0B;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -103,19 +154,8 @@ body {
     justify-content: space-between;
 }
 
-.profile-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .profile-logo img {
     height: 32px;
-}
-
-.profile-logo span {
-    font-weight: 600;
-    font-size: 18px;
 }
 
 .profile-nav {
@@ -129,228 +169,376 @@ body {
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: color 0.2s;
-}
-
-.profile-nav a:hover {
-    color: var(--text);
 }
 
 /* Main */
 .profile-main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 48px 24px;
+    padding: 32px 24px 120px;
 }
 
-/* Hero Section */
-.profile-hero {
-    background: linear-gradient(135deg, var(--primary) 0%, #FF7B3D 100%);
-    border-radius: var(--radius);
-    padding: 48px;
+/* Progress Header */
+.progress-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: 20px;
+    padding: 32px;
     color: white;
-    margin-bottom: 48px;
+    margin-bottom: 32px;
     position: relative;
     overflow: hidden;
 }
 
-.profile-hero::before {
+.progress-header::before {
     content: '';
     position: absolute;
     top: -50%;
-    right: -20%;
-    width: 400px;
-    height: 400px;
+    right: -10%;
+    width: 300px;
+    height: 300px;
     background: rgba(255,255,255,0.1);
     border-radius: 50%;
 }
 
-.profile-hero-content {
+.progress-header-content {
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
     gap: 32px;
+    flex-wrap: wrap;
 }
 
-.profile-avatar {
-    width: 100px;
-    height: 100px;
+.avatar-section {
+    text-align: center;
+}
+
+.avatar-section img {
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    border: 4px solid white;
-    overflow: hidden;
-    background: white;
-}
-
-.profile-avatar img {
-    width: 100%;
-    height: 100%;
+    border: 3px solid white;
     object-fit: cover;
 }
 
-.profile-info h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
-
-.profile-info p {
-    opacity: 0.9;
-    font-size: 14px;
-}
-
-.profile-stats {
-    display: flex;
-    gap: 32px;
-    margin-top: 24px;
-}
-
-.profile-stat {
-    text-align: center;
-}
-
-.profile-stat-value {
-    font-size: 28px;
-    font-weight: 700;
-}
-
-.profile-stat-label {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-/* Megafonos Card */
-.megafonos-card {
-    background: rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 24px;
-    backdrop-filter: blur(10px);
-    margin-left: auto;
-    text-align: center;
-}
-
-.megafonos-card .icon {
-    font-size: 40px;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.megafonos-card .count {
-    font-size: 36px;
-    font-weight: 700;
-}
-
-.megafonos-card .label {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-.megafonos-card .nivel {
-    display: inline-block;
-    background: rgba(255,255,255,0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+.avatar-section .user-name {
+    font-size: 16px;
     font-weight: 600;
     margin-top: 8px;
 }
 
-/* Grid */
-.profile-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+.avatar-section .user-level {
+    font-size: 12px;
+    opacity: 0.9;
 }
 
-@media (max-width: 768px) {
-    .profile-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .profile-hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .profile-stats {
-        justify-content: center;
-    }
-    
-    .megafonos-card {
-        margin: 24px auto 0;
-    }
+.progress-info {
+    flex: 1;
+    min-width: 280px;
 }
 
-/* Cards */
-.profile-card {
+.progress-points {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.progress-points .icon {
+    font-size: 32px;
+}
+
+.progress-points .value {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.progress-points .label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.progress-bar-container {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    min-width: 4px;
+}
+
+.progress-markers {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.progress-next {
+    text-align: center;
+    min-width: 160px;
+}
+
+.progress-next .level-icon {
+    font-size: 40px;
+}
+
+.progress-next .level-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.progress-next .level-distance {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
+.progress-next .level-distance span {
+    font-weight: 700;
+}
+
+/* Sections */
+.section {
     background: var(--card);
-    border-radius: var(--radius);
+    border-radius: 16px;
     padding: 24px;
-    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
-.profile-card-header {
+.section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
 }
 
-.profile-card-title {
+.section-title {
     font-size: 18px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.profile-card-action {
+.section-title .icon {
+    font-size: 24px;
+}
+
+.section-link {
     color: var(--primary);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
 }
 
-.profile-card-action:hover {
-    text-decoration: underline;
+/* Rewards Grid */
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.reward-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.reward-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.reward-card.locked {
+    opacity: 0.6;
+}
+
+.reward-card.locked .reward-image {
+    filter: grayscale(100%);
+}
+
+.reward-card.locked .reward-lock {
+    display: flex;
+}
+
+.reward-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.reward-lock {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.reward-content {
+    padding: 12px;
+}
+
+.reward-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.reward-cost {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.reward-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+.reward-btn:hover {
+    background: #D44A0B;
+}
+
+.reward-btn:disabled {
+    background: var(--border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* Achievements Grid */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.achievement-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.achievement-card.unlocked {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+}
+
+.achievement-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.achievement-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.achievement-desc {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.achievement-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 16px;
 }
 
 /* Favorites List */
 .favorites-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
 }
 
-.favorite-item {
+.favorite-card {
     display: flex;
-    align-items: center;
     gap: 12px;
     padding: 12px;
     background: var(--bg);
     border-radius: 12px;
-    transition: all 0.2s;
     text-decoration: none;
     color: var(--text);
+    transition: all 0.2s;
 }
 
-.favorite-item:hover {
+.favorite-card:hover {
     background: var(--border);
 }
 
 .favorite-img {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 8px;
     object-fit: cover;
-    background: var(--border);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
 }
 
 .favorite-info {
     flex: 1;
+    min-width: 0;
 }
 
 .favorite-name {
     font-weight: 600;
     font-size: 14px;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .favorite-cat {
@@ -358,59 +546,40 @@ body {
     color: var(--text-light);
 }
 
-.favorite-rating {
-    font-size: 12px;
-    color: #F59E0B;
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
 
-/* Reviews List */
-.reviews-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.review-item {
-    padding: 16px;
+.stat-card {
     background: var(--bg);
     border-radius: 12px;
+    padding: 20px;
+    text-align: center;
 }
 
-.review-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.stat-icon {
+    font-size: 28px;
     margin-bottom: 8px;
 }
 
-.review-negocio {
-    font-weight: 600;
-    font-size: 14px;
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
     color: var(--text);
-    text-decoration: none;
 }
 
-.review-stars {
-    color: #F59E0B;
+.stat-label {
     font-size: 12px;
-}
-
-.review-text {
-    font-size: 14px;
     color: var(--text-light);
-    line-height: 1.5;
-}
-
-.review-date {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 8px;
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
-    padding: 32px;
+    padding: 48px 24px;
     color: var(--text-light);
 }
 
@@ -418,10 +587,6 @@ body {
     font-size: 48px;
     margin-bottom: 12px;
     opacity: 0.5;
-}
-
-.empty-state p {
-    font-size: 14px;
 }
 
 /* Bottom Nav */
@@ -434,18 +599,23 @@ body {
     border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-around;
-    padding: 12px 0;
+    padding: 8px 0 12px;
+    z-index: 100;
 }
 
 .bottom-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     color: var(--text-light);
     text-decoration: none;
-    font-size: 11px;
+    font-size: 10px;
     transition: color 0.2s;
+}
+
+.bottom-nav-item .icon {
+    font-size: 22px;
 }
 
 .bottom-nav-item.active,
@@ -453,17 +623,67 @@ body {
     color: var(--primary);
 }
 
-.bottom-nav-item .icon {
-    font-size: 20px;
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: var(--bg);
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .progress-header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .progress-info {
+        width: 100%;
+    }
+    
+    .progress-points {
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-bottom-nav {
+        display: flex;
+    }
 }
 
 @media (min-width: 769px) {
     .profile-bottom-nav {
         display: none;
-    }
-    
-    .profile-main {
-        padding-bottom: 100px;
     }
 }
 </style>
@@ -474,67 +694,173 @@ body {
             <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-PRINCIPAL.png" alt="Cuentanos">
         </a>
         <nav class="profile-nav">
-            <a href="<?php echo home_url(); ?>">Explorar</a>
+            <a href="<?php echo home_url(); ?>">Inicio</a>
+            <a href="<?php echo home_url('/negocio'); ?>">Explorar</a>
             <a href="<?php echo wp_logout_url(home_url()); ?>">Cerrar sesión</a>
         </nav>
     </div>
 </header>
 
 <main class="profile-main">
-    <section class="profile-hero">
-        <div class="profile-hero-content">
-            <div class="profile-avatar">
+    <!-- Progress Header -->
+    <section class="progress-header">
+        <div class="progress-header-content">
+            <div class="avatar-section">
                 <img src="<?php echo esc_url($avatar); ?>" alt="<?php echo esc_attr($user->display_name); ?>">
+                <div class="user-name"><?php echo esc_html($user->display_name); ?></div>
+                <div class="user-level"><?php echo $current_nivel_data['icon']; ?> <?php echo $current_nivel_data['label']; ?></div>
             </div>
-            <div class="profile-info">
-                <h1><?php echo esc_html($user->display_name); ?></h1>
-                <p><?php echo esc_html($user->user_email); ?></p>
-                <div class="profile-stats">
-                    <div class="profile-stat">
-                        <div class="profile-stat-value"><?php echo number_format($favoritos_count); ?></div>
-                        <div class="profile-stat-label">Favoritos</div>
-                    </div>
-                    <div class="profile-stat">
-                        <div class="profile-stat-value"><?php echo number_format($resenas_count); ?></div>
-                        <div class="profile-stat-label">Reseñas</div>
-                    </div>
+            
+            <div class="progress-info">
+                <div class="progress-points">
+                    <span class="icon">📣</span>
+                    <span class="value"><?php echo number_format($megafonos); ?></span>
+                    <span class="label">Megáfonos</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: <?php echo min(100, $progress_in_level); ?>%"></div>
+                </div>
+                <div class="progress-markers">
+                    <span><?php echo $current_nivel_data['min']; ?></span>
+                    <span><?php echo $next_level ? $next_level['data']['min'] : 'MAX'; ?></span>
                 </div>
             </div>
-            <div class="megafonos-card">
-                <span class="icon">📣</span>
-                <div class="count"><?php echo number_format($megafonos); ?></div>
-                <div class="label">Megáfonos</div>
-                <span class="nivel"><?php echo $nivel_icons[$nivel]; ?> <?php echo $nivel_labels[$nivel]; ?></span>
+            
+            <?php if ($next_level): ?>
+            <div class="progress-next">
+                <div class="level-icon"><?php echo $next_level['data']['icon']; ?></div>
+                <div class="level-name"><?php echo $next_level['data']['label']; ?></div>
+                <div class="level-distance">Estás a <span><?php echo number_format($next_level['data']['min'] - $megafonos); ?></span> Megáfonos</div>
             </div>
+            <?php else: ?>
+            <div class="progress-next">
+                <div class="level-icon">👑</div>
+                <div class="level-name">¡Máximo Nivel!</div>
+                <div class="level-distance">Eres una Leyenda</div>
+            </div>
+            <?php endif; ?>
         </div>
     </section>
 
-    <div class="profile-grid">
-        <div class="profile-card">
-            <div class="profile-card-header">
-                <h2 class="profile-card-title">❤️ Favoritos</h2>
-                <a href="#" class="profile-card-action">Ver todos</a>
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+        <button class="tab active" data-tab="resumen">Resumen</button>
+        <button class="tab" data-tab="recompensas">Recompensas</button>
+        <button class="tab" data-tab="logros">Logros</button>
+        <button class="tab" data-tab="favoritos">Favoritos</button>
+    </div>
+
+    <!-- Resumen Tab -->
+    <div class="tab-content active" id="tab-resumen">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📣</div>
+                <div class="stat-value"><?php echo number_format($megafonos); ?></div>
+                <div class="stat-label">Megáfonos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-value"><?php echo number_format($favoritos_count); ?></div>
+                <div class="stat-label">Favoritos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value"><?php echo number_format($resenas_count); ?></div>
+                <div class="stat-label">Reseñas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rewards Tab -->
+    <div class="tab-content" id="tab-recompensas">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title"><span class="icon">🎁</span> Recompensas Disponibles</h2>
+            </div>
+            <?php if (!empty($recompensas_posts)): ?>
+            <div class="rewards-grid">
+                <?php foreach ($recompensas_posts as $rec): 
+                    $costo = get_post_meta($rec->ID, 'cnmx_costo', true) ?: 0;
+                    $unlocked = $megafonos >= $costo;
+                    $canjeado = in_array($rec->ID, array_column($user_recompensas, 'recompensa_id'));
+                ?>
+                <div class="reward-card <?php echo $unlocked ? '' : 'locked'; ?>">
+                    <div class="reward-image">
+                        <?php if ($canjeado): ?>
+                        ✓
+                        <?php elseif ($unlocked): ?>
+                        🎁
+                        <?php else: ?>
+                        🔒
+                        <?php endif; ?>
+                    </div>
+                    <div class="reward-lock">🔒</div>
+                    <div class="reward-content">
+                        <div class="reward-name"><?php echo esc_html($rec->post_title); ?></div>
+                        <div class="reward-cost">
+                            <span>📣</span> <?php echo number_format($costo); ?>
+                        </div>
+                        <?php if ($canjeado): ?>
+                        <button class="reward-btn" disabled>✓ Canjeado</button>
+                        <?php elseif ($unlocked): ?>
+                        <button class="reward-btn" onclick="canjearRecompensa(<?php echo $rec->ID; ?>, <?php echo $costo; ?>)">Canjear</button>
+                        <?php else: ?>
+                        <button class="reward-btn" disabled>Bloqueado</button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div class="empty-state">
+                <div class="icon">🎁</div>
+                <p>Próximamente habrá recompensas disponibles</p>
+            </div>
+            <?php endif; ?>
+        </section>
+    </div>
+
+    <!-- Achievements Tab -->
+    <div class="tab-content" id="tab-logros">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title"><span class="icon">🏆</span> Mis Logros</h2>
+            </div>
+            <?php if (!empty($logros_posts)): ?>
+            <div class="achievements-grid">
+                <?php foreach ($logros_posts as $logro): 
+                    $unlocked = in_array($logro->ID, $user_logros);
+                ?>
+                <div class="achievement-card <?php echo $unlocked ? 'unlocked' : 'locked'; ?>">
+                    <div class="achievement-status"><?php echo $unlocked ? '✅' : '🔒'; ?></div>
+                    <div class="achievement-icon"><?php echo $unlocked ? '🏆' : '🔒'; ?></div>
+                    <div class="achievement-name"><?php echo esc_html($logro->post_title); ?></div>
+                    <div class="achievement-desc"><?php echo esc_html($logro->post_content ?: 'Completa acciones para desbloquear'); ?></div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div class="empty-state">
+                <div class="icon">🏆</div>
+                <p>Próximamente habrá logros disponibles</p>
+            </div>
+            <?php endif; ?>
+        </section>
+    </div>
+
+    <!-- Favorites Tab -->
+    <div class="tab-content" id="tab-favoritos">
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title"><span class="icon">❤️</span> Mis Favoritos</h2>
             </div>
             <div class="favorites-list" id="favorites-list">
                 <div class="empty-state">
                     <div class="icon">❤️</div>
-                    <p>No tienes favoritos aún</p>
+                    <p>Cargando favoritos...</p>
                 </div>
             </div>
-        </div>
-
-        <div class="profile-card">
-            <div class="profile-card-header">
-                <h2 class="profile-card-title">⭐ Mis Reseñas</h2>
-                <a href="#" class="profile-card-action">Ver todas</a>
-            </div>
-            <div class="reviews-list" id="reviews-list">
-                <div class="empty-state">
-                    <div class="icon">⭐</div>
-                    <p>No has escrito reseñas aún</p>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 </main>
 
@@ -547,17 +873,35 @@ body {
         <span class="icon">🔍</span>
         <span>Explorar</span>
     </a>
-    <a href="#" class="bottom-nav-item">
-        <span class="icon">❤️</span>
-        <span>Favoritos</span>
+    <a href="#" class="bottom-nav-item" onclick="switchTab('recompensas')">
+        <span class="icon">🎁</span>
+        <span>Recompensas</span>
     </a>
-    <a href="#" class="bottom-nav-item active">
+    <a href="#" class="bottom-nav-item active" onclick="switchTab('resumen')">
         <span class="icon">👤</span>
         <span>Perfil</span>
     </a>
 </nav>
 
 <script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const tabId = this.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + tabId).classList.add('active');
+    });
+});
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById('tab-' + tabId).classList.add('active');
+}
+
 // Load favorites
 fetch('/wp-json/cuentanos/v1/favoritos', {
     headers: {
@@ -568,41 +912,46 @@ fetch('/wp-json/cuentanos/v1/favoritos', {
 .then(data => {
     const list = document.getElementById('favorites-list');
     if (data.favoritos && data.favoritos.length > 0) {
-        list.innerHTML = data.favoritos.slice(0, 3).map(fav => `
-            <a href="${fav.post_url}" class="favorite-item">
-                <div class="favorite-img" style="background: linear-gradient(135deg, #EB510C, #F89D2F); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">📍</div>
+        list.innerHTML = data.favoritos.map(fav => `
+            <a href="${fav.post_url}" class="favorite-card">
+                <div class="favorite-img">📍</div>
                 <div class="favorite-info">
                     <div class="favorite-name">${fav.post_title}</div>
                     <div class="favorite-cat">Negocio local</div>
                 </div>
             </a>
         `).join('');
+    } else {
+        list.innerHTML = '<div class="empty-state"><div class="icon">❤️</div><p>No tienes favoritos aún</p></div>';
     }
 })
-.catch(() => {});
+.catch(() => {
+    document.getElementById('favorites-list').innerHTML = '<div class="empty-state"><div class="icon">❤️</div><p>Error al cargar favoritos</p></div>';
+});
 
-// Load reviews
-fetch('/wp-json/cuentanos/v1/usuario/resenas', {
-    headers: {
-        'X-WP-Nonce': cnmxUsersData.nonce
-    }
-})
-.then(r => r.json())
-.then(data => {
-    const list = document.getElementById('reviews-list');
-    if (data.resenas && data.resenas.length > 0) {
-        list.innerHTML = data.resenas.slice(0, 3).map(res => `
-            <div class="review-item">
-                <div class="review-header">
-                    <a href="${res.negocio_link}" class="review-negocio">${res.negocio_nombre}</a>
-                    <span class="review-stars">${'★'.repeat(res.calificacion)}${'☆'.repeat(5-res.calificacion)}</span>
-                </div>
-                <p class="review-text">${res.contenido}</p>
-            </div>
-        `).join('');
-    }
-})
-.catch(() => {});
+// Redeem reward
+function canjearRecompensa(id, costo) {
+    if (!confirm('¿Canjeas esta recompensa por ' + costo + ' Megáfonos?')) return;
+    
+    fetch('/wp-json/cuentanos/v1/recompensas/canjear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-WP-Nonce': cnmxUsersData.nonce
+        },
+        body: JSON.stringify({ recompensa_id: id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            cnmxToastSuccess('¡Recompensa canjeada!');
+            location.reload();
+        } else {
+            cnmxToastError(data.message || 'Error al canjear');
+        }
+    })
+    .catch(() => cnmxToastError('Error de conexión'));
+}
 </script>
 
 <?php wp_footer(); ?>
