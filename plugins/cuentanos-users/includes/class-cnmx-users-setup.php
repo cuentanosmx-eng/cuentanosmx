@@ -86,18 +86,23 @@ class CNMX_Users_Setup {
     public function load_template($template) {
         global $post;
         
-        $template_map = array(
-            'page-mi-cuenta.php' => 'mi-cuenta',
-            'page-registro.php' => 'registro',
-            'page-perfil.php' => 'perfil',
-            'page-mis-favoritos.php' => 'mis-favoritos',
-            'page-recuperar-contrasena.php' => 'recuperar-contrasena',
-            'page-nueva-contrasena.php' => 'nueva-contrasena',
+        if (!$post || $post->post_type !== 'page') {
+            return $template;
+        }
+        
+        $slug_map = array(
+            'mi-cuenta' => 'page-mi-cuenta.php',
+            'registro' => 'page-registro.php',
+            'perfil' => 'page-perfil.php',
+            'mis-favoritos' => 'page-mis-favoritos.php',
+            'recuperar-contrasena' => 'page-recuperar-contrasena.php',
+            'nueva-contrasena' => 'page-nueva-contrasena.php',
         );
         
-        if ($post && isset($template_map[$post->page_template])) {
-            $slug = $template_map[$post->page_template];
-            $custom_template = CNMX_USERS_PATH . 'templates/page-' . $slug . '.php';
+        $slug = $post->post_name;
+        
+        if (isset($slug_map[$slug])) {
+            $custom_template = CNMX_USERS_PATH . 'templates/' . $slug_map[$slug];
             
             if (file_exists($custom_template)) {
                 return $custom_template;
