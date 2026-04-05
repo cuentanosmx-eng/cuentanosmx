@@ -14,17 +14,117 @@ define('CNMX_SOCIAL_URL', plugin_dir_url(__FILE__));
 
 class CNMX_Social_Login {
     
-    private $google_client_id = '';
-    private $google_client_secret = '';
-    private $facebook_app_id = '';
-    private $facebook_app_secret = '';
+    private function get_google_client_id() {
+        return get_option('cnmx_google_client_id', '');
+    }
+    
+    private function get_google_client_secret() {
+        return get_option('cnmx_google_client_secret', '');
+    }
+    
+    private function get_facebook_app_id() {
+        return get_option('cnmx_facebook_app_id', '');
+    }
+    
+    private function get_facebook_app_secret() {
+        return get_option('cnmx_facebook_app_secret', '');
+    }
     
     public function __construct() {
-        add_action('init', [$this, 'handle_social_callback']);
-        add_action('wp_ajax_cnmx_social_login_url', [$this, 'get_login_url']);
-        add_action('wp_ajax_nopriv_cnmx_social_login_url', [$this, 'get_login_url']);
+        add_action('admin_menu', [$this, 'add_admin_menu']);
+        add_action('admin_post_cnmx_save_social_settings', [$this, 'save_settings']);
         
         add_action('wp_loaded', [$this, 'check_social_login']);
+        add_action('wp_ajax_cnmx_social_login_url', [$this, 'get_login_url']);
+        add_action('wp_ajax_nopriv_cnmx_social_login_url', [$this, 'get_login_url']);
+    }
+    
+    public function add_admin_menu() {
+        add_options_page(
+            'Social Login',
+            'Social Login',
+            'manage_options',
+            'cnmx-social-login',
+            [$this, 'admin_page']
+        );
+    }
+    
+    public function admin_page() {
+        if (isset($_GET['settings_saved'])) {
+            echo '<div class="notice notice-success"><p>Configuración guardada.</p></div>';
+        }
+        ?>
+        <div class="wrap">
+            <h1>Configuración Social Login</h1>
+            
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                <input type="hidden" name="action" value="cnmx_save_social_settings">
+                <?php wp_nonce_field('cnmx_save_social'); ?>
+                
+                <h2>Google OAuth</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Client ID</th>
+                        <td>
+                            <input type="text" name="google_client_id" value="<?php echo esc_attr($this->get_google_client_id()); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Client Secret</th>
+                        <td>
+                            <input type="password" name="google_client_secret" value="<?php echo esc_attr($this->get_google_client_secret()); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">URI de redirección</th>
+                        <td>
+                            <code style="padding: 10px; display: block; background: #f0f0f0;"><?php echo home_url('/?cnmx_social=callback&provider=google'); ?></code>
+                            <p class="description">Copia esta URL en Google Cloud Console</p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <h2>Facebook OAuth</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">App ID</th>
+                        <td>
+                            <input type="text" name="facebook_app_id" value="<?php echo esc_attr($this->get_facebook_app_id()); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">App Secret</th>
+                        <td>
+                            <input type="password" name="facebook_app_secret" value="<?php echo esc_attr($this->get_facebook_app_secret()); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">URI de redirección</th>
+                        <td>
+                            <code style="padding: 10px; display: block; background: #f0f0f0;"><?php echo home_url('/?cnmx_social=callback&provider=facebook'); ?></code>
+                            <p class="description">Copia esta URL en Facebook Developer</p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <p class="submit">
+                    <input type="submit" class="button button-primary" value="Guardar configuración">
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+    
+    public function save_settings() {
+        check_admin_referer('cnmx_save_social');
+        
+        update_option('cnmx_google_client_id', sanitize_text_field($_POST['google_client_id'] ?? ''));
+        update_option('cnmx_google_client_secret', sanitize_text_field($_POST['google_client_secret'] ?? ''));
+        update_option('cnmx_facebook_app_id', sanitize_text_field($_POST['facebook_app_id'] ?? ''));
+        update_option('cnmx_facebook_app_secret', sanitize_text_field($_POST['facebook_app_secret'] ?? ''));
+        
+        wp_redirect(add_query_arg('settings_saved', 'true', wp_get_referer()));
+        exit;
     }
     
     public function check_social_login() {
@@ -49,18 +149,11 @@ class CNMX_Social_Login {
     }
     
     private function get_google_auth_url($redirect) {
-        $client_id = $this->google_client_id;
+        $client_id = $this->get_google_client_id();
         $redirect_uri = home_url('/?cnmx_social=callback&provider=google');
         
-        if (empty($client_id) || $client_id === 'YOUR_GOOGLE_CLIENT_ID') {
-            $redirect_uri_fallback = home_url('/registro') . '?error=google_config';
-            return 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
-                'client_id' => $client_id ?: 'demo',
-                'redirect_uri' => $redirect_uri_fallback,
-                'response_type' => 'code',
-                'scope' => 'email profile',
-                'state' => base64_encode($redirect),
-            ]);
+        if (empty($client_id)) {
+            return home_url('/mi-cuenta?error=google_not_configured');
         }
         
         return 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
@@ -73,17 +166,11 @@ class CNMX_Social_Login {
     }
     
     private function get_facebook_auth_url($redirect) {
-        $app_id = $this->facebook_app_id;
+        $app_id = $this->get_facebook_app_id();
         $redirect_uri = home_url('/?cnmx_social=callback&provider=facebook');
         
-        if (empty($app_id) || $app_id === 'YOUR_FACEBOOK_APP_ID') {
-            $redirect_uri_fallback = home_url('/registro') . '?error=facebook_config';
-            return 'https://www.facebook.com/v18.0/dialog/oauth?' . http_build_query([
-                'client_id' => $app_id ?: 'demo',
-                'redirect_uri' => $redirect_uri_fallback,
-                'scope' => 'email',
-                'state' => base64_encode($redirect),
-            ]);
+        if (empty($app_id)) {
+            return home_url('/mi-cuenta?error=facebook_not_configured');
         }
         
         return 'https://www.facebook.com/v18.0/dialog/oauth?' . http_build_query([
@@ -121,21 +208,11 @@ class CNMX_Social_Login {
             exit;
         }
         
-        $client_id = $this->google_client_id;
-        $client_secret = $this->google_client_secret;
+        $client_id = $this->get_google_client_id();
+        $client_secret = $this->get_google_client_secret();
         $redirect_uri = home_url('/?cnmx_social=callback&provider=google');
         
-        if (empty($client_id) || $client_id === 'YOUR_GOOGLE_CLIENT_ID') {
-            $this->create_demo_user('google', [
-                'email' => 'demo@google.com',
-                'name' => 'Usuario Google Demo',
-                'picture' => 'https://ui-avatars.com/api/?name=GD&background=4285F4&color=fff'
-            ], $redirect);
-            return;
-        }
-        
-        $token_url = 'https://oauth2.googleapis.com/token';
-        $token_response = wp_remote_post($token_url, [
+        $token_response = wp_remote_post('https://oauth2.googleapis.com/token', [
             'body' => [
                 'code' => $code,
                 'client_id' => $client_id,
@@ -158,15 +235,14 @@ class CNMX_Social_Login {
             exit;
         }
         
-        $userinfo_url = 'https://www.googleapis.com/oauth2/v2/userinfo';
-        $user_response = wp_remote_get($userinfo_url, [
+        $user_response = wp_remote_get('https://www.googleapis.com/oauth2/v2/userinfo', [
             'headers' => ['Authorization' => 'Bearer ' . $access_token]
         ]);
         
         $user_data = json_decode(wp_remote_retrieve_body($user_response), true);
         
         if (!empty($user_data['email'])) {
-            $this->create_demo_user('google', [
+            $this->create_or_login_user('google', [
                 'email' => $user_data['email'],
                 'name' => $user_data['name'] ?? 'Usuario Google',
                 'picture' => $user_data['picture'] ?? '',
@@ -184,21 +260,11 @@ class CNMX_Social_Login {
             exit;
         }
         
-        $app_id = $this->facebook_app_id;
-        $app_secret = $this->facebook_app_secret;
+        $app_id = $this->get_facebook_app_id();
+        $app_secret = $this->get_facebook_app_secret();
         $redirect_uri = home_url('/?cnmx_social=callback&provider=facebook');
         
-        if (empty($app_id) || $app_id === 'YOUR_FACEBOOK_APP_ID') {
-            $this->create_demo_user('facebook', [
-                'email' => 'demo@facebook.com',
-                'name' => 'Usuario Facebook Demo',
-                'picture' => 'https://ui-avatars.com/api/?name=FD&background=1877F2&color=fff'
-            ], $redirect);
-            return;
-        }
-        
-        $token_url = 'https://graph.facebook.com/v18.0/oauth/access_token';
-        $token_response = wp_remote_get($token_url, [
+        $token_response = wp_remote_get('https://graph.facebook.com/v18.0/oauth/access_token', [
             'body' => [
                 'client_id' => $app_id,
                 'client_secret' => $app_secret,
@@ -215,22 +281,21 @@ class CNMX_Social_Login {
             exit;
         }
         
-        $user_url = 'https://graph.facebook.com/me?fields=id,name,email,picture&access_token=' . $access_token;
-        $user_response = wp_remote_get($user_url);
+        $user_response = wp_remote_get('https://graph.facebook.com/me?fields=id,name,email,picture&access_token=' . $access_token);
         $user_data = json_decode(wp_remote_retrieve_body($user_response), true);
         
         if (!empty($user_data['email'])) {
-            $this->create_demo_user('facebook', [
+            $this->create_or_login_user('facebook', [
                 'email' => $user_data['email'],
                 'name' => $user_data['name'] ?? 'Usuario Facebook',
                 'picture' => isset($user_data['picture']['url']) ? $user_data['picture']['url'] : '',
             ], $redirect);
         } else {
-            wp_redirect(home_url('/mi-cuenta?error=facebook_userinfo'));
+            wp_redirect(home_url('/mi-cuenta?error=facebook_email'));
         }
     }
     
-    private function create_demo_user($provider, $user_data, $redirect) {
+    private function create_or_login_user($provider, $user_data, $redirect) {
         $email = $user_data['email'];
         $name = $user_data['name'];
         
@@ -274,12 +339,16 @@ class CNMX_Social_Login {
         update_user_meta($user_id, 'cnmx_tipo_cuenta', 'usuario');
         
         global $wpdb;
-        $wpdb->insert($wpdb->prefix . 'cnmx_usuarios_meta', [
-            'user_id' => $user_id,
-            'megafonos' => 50,
-            'nivel' => 'explorador',
-            'fecha_registro' => current_time('mysql'),
-        ]);
+        $table = $wpdb->prefix . 'cnmx_usuarios_meta';
+        
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table'") === $table) {
+            $wpdb->insert($table, [
+                'user_id' => $user_id,
+                'megafonos' => 50,
+                'nivel' => 'explorador',
+                'fecha_registro' => current_time('mysql'),
+            ]);
+        }
         
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
