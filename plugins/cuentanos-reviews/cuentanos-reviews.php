@@ -274,11 +274,16 @@ class CNMX_Reviews {
         
         $negocio_id = intval($_POST['negocio_id']);
         $rating = intval($_POST['rating']);
-        $texto = sanitize_textarea_field($_POST['texto']);
+        $texto = sanitize_textarea_field($_POST['texto'] ?? $_POST['contenido'] ?? '');
         $fotos = isset($_POST['fotos']) ? array_map('esc_url', $_POST['fotos']) : array();
         
-        if (!$negocio_id || !$texto) {
-            wp_send_json_error('Faltan datos requeridos');
+        if (!$negocio_id) {
+            wp_send_json_error('Negocio no válido');
+            return;
+        }
+        
+        if (empty($texto)) {
+            wp_send_json_error('El texto de la reseña es requerido');
             return;
         }
         
@@ -286,21 +291,56 @@ class CNMX_Reviews {
             $rating = 5;
         }
         
-        $args = array(
-            'post_type' => 'cnmx_resena',
-            'post_status' => 'publish',
-            'post_title' => 'Reseña de ' . wp_get_current_user()->display_name,
-            'post_content' => $texto,
-        );
+        $user_id = get_current_user_id();
+        $now = current_time('mysql');
         
-        $resena_id = wp_insert_post($args);
+        // Guardar en la tabla custom
+        global $wpdb;
+        $table_resenas = $wpdb->prefix . 'cnmx_resenas';
         
-        if ($resena_id && !is_wp_error($resena_id)) {
-            update_post_meta($resena_id, 'cnmx_negocio_id', $negocio_id);
-            update_post_meta($resena_id, 'cnmx_user_id', get_current_user_id());
-            update_post_meta($resena_id, 'cnmx_rating', $rating);
-            update_post_meta($resena_id, 'cnmx_fotos', implode("\n", $fotos));
-            update_post_meta($resena_id, 'cnmx_fecha_resena', current_time('mysql'));
+        $wpdb->insert($table_resenas, array(
+            'negocio_id' => $negocio_id,
+            'user_id' => $user_id,
+            'calificacion' => $rating,
+            'contenido' => $texto,
+            'fecha' => $now,
+            'status' => 'aprobado'
+        ));
+        
+        $resena_id = $wpdb->insert_id;
+        
+        if ($resena_id) {
+            // Crear también el CPT para admin
+            $cpt_id = wp_insert_post(array(
+                'post_type' => 'cnmx_resena',
+                'post_status' => 'publish',
+                'post_title' => 'Reseña #' . $resena_id,
+                'post_content' => $texto,
+            ));
+            
+            if ($cpt_id && !is_wp_error($cpt_id)) {
+                update_post_meta($cpt_id, 'cnmx_negocio_id', $negocio_id);
+                update_post_meta($cpt_id, 'cnmx_user_id', $user_id);
+                update_post_meta($cpt_id, 'cnmx_rating', $rating);
+                update_post_meta($cpt_id, 'cnmx_fecha_resena', $now);
+            }
+            
+            // Actualizar rating del negocio
+            $avg_rating = $wpdb->get_var($wpdb->prepare(
+                "SELECT AVG(calificacion) FROM $table_resenas WHERE negocio_id = %d AND status = 'aprobado'",
+                $negocio_id
+            ));
+            $count_rating = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM $table_resenas WHERE negocio_id = %d AND status = 'aprobado'",
+                $negocio_id
+            ));
+            
+            update_post_meta($negocio_id, 'cnmx_rating', round($avg_rating, 1));
+            update_post_meta($negocio_id, 'cnmx_reviews_count', $count_rating);
+            
+            // Dar Megáfonos al usuario
+            $megafonos_resena = get_option('cnmx_megafonos_resena', 5);
+            cnmx_add_megafonos($user_id, $megafonos_resena, 'Nueva reseña');
             
             wp_send_json_success(array(
                 'resena_id' => $resena_id,

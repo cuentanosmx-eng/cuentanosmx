@@ -490,15 +490,19 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('<?php echo admin_url('admin-ajax.php'); ?>?action=cnmx_guardar_resena', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'negocio_id=' + negocioId + '&rating=' + rating + '&texto=' + encodeURIComponent(contenido) + '&nonce=<?php echo wp_create_nonce('cnmx_reviews_nonce'); ?>'
+            body: 'negocio_id=' + negocioId + '&rating=' + rating + '&texto=' + encodeURIComponent(contenido) + '&nonce=<?php echo wp_create_nonce('cnmx_nonce'); ?>'
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                cnmxToastSuccess('¡Reseña publicada!');
+                setTimeout(() => location.reload(), 1500);
             } else {
-                cnmxToastError('Error al guardar la reseña');
+                cnmxToastError(data.data || 'Error al guardar la reseña');
             }
+        })
+        .catch(err => {
+            cnmxToastError('Error de conexión');
         });
     });
 });
