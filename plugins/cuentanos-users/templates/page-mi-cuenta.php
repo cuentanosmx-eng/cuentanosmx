@@ -377,9 +377,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             form.classList.remove('loading');
             if (data.success) {
-                window.location.href = data.redirect || '<?php echo home_url('/perfil'); ?>';
+                window.location.href = data.data?.redirect || '<?php echo home_url('/perfil'); ?>';
             } else {
-                alert(data.message || 'Error al iniciar sesión');
+                alert(data.data?.message || 'Error al iniciar sesión');
             }
         })
         .catch(err => {

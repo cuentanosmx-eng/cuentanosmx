@@ -15,6 +15,33 @@ class CNMX_Users_Setup {
         
         add_action('wp_ajax_cnmx_reset_password', [$this, 'handle_reset_password']);
         add_action('wp_ajax_nopriv_cnmx_reset_password', [$this, 'handle_reset_password']);
+        
+        add_action('wp_ajax_cnmx_set_new_password', [$this, 'handle_set_new_password']);
+        add_action('wp_ajax_nopriv_cnmx_set_new_password', [$this, 'handle_set_new_password']);
+    }
+    
+    public function handle_set_new_password() {
+        $user_key = sanitize_text_field($_POST['user_key'] ?? '');
+        $user_login = sanitize_text_field($_POST['user_login'] ?? '');
+        $new_password = $_POST['new_password'] ?? '';
+        
+        if (empty($user_key) || empty($user_login) || empty($new_password)) {
+            wp_send_json_error(['message' => 'Todos los campos son requeridos']);
+        }
+        
+        $user = check_password_reset_key($user_key, $user_login);
+        
+        if (!$user || is_wp_error($user)) {
+            wp_send_json_error(['message' => 'El enlace ha expirado o es inválido. Solicita uno nuevo.']);
+        }
+        
+        if (strlen($new_password) < 8) {
+            wp_send_json_error(['message' => 'La contraseña debe tener al menos 8 caracteres']);
+        }
+        
+        wp_set_password($new_password, $user->ID);
+        
+        wp_send_json_success(['message' => 'Contraseña actualizada correctamente']);
     }
     
     public function handle_reset_password() {
@@ -28,7 +55,7 @@ class CNMX_Users_Setup {
         
         if ($user) {
             $key = get_password_reset_key($user);
-            $reset_url = home_url('/mi-cuenta') . '?action=rp&key=' . $key . '&login=' . rawurlencode($user->user_login);
+            $reset_url = home_url('/nueva-contrasena') . '?key=' . $key . '&login=' . rawurlencode($user->user_login);
             
             $to = $email;
             $subject = 'Restablecer contraseña - Cuentanos.mx';

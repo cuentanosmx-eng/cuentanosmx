@@ -947,28 +947,37 @@ function cnmx_ajax_register() {
     wp_set_current_user($user_id);
     wp_set_auth_cookie($user_id);
     
-    wp_send_json_success('Cuenta creada exitosamente');
+    wp_send_json_success(['redirect' => home_url('/perfil')]);
 }
 
 add_action('wp_ajax_cnmx_login', 'cnmx_ajax_login');
 add_action('wp_ajax_nopriv_cnmx_login', 'cnmx_ajax_login');
 
 function cnmx_ajax_login() {
-    check_ajax_referer('cnmx_nonce');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
     
-    $credentials = array(
-        'user_login' => sanitize_text_field($_POST['username']),
-        'user_password' => $_POST['password'],
-        'remember' => isset($_POST['remember']),
-    );
-    
-    $user = wp_signon($credentials);
-    
-    if (is_wp_error($user)) {
-        wp_send_json_error('Credenciales incorrectas');
+    if (empty($email) || empty($password)) {
+        wp_send_json_error(['message' => 'Email y contraseña son requeridos']);
     }
     
-    wp_send_json_success('Sesión iniciada');
+    $user = get_user_by('email', $email);
+    
+    if (!$user) {
+        wp_send_json_error(['message' => 'No existe una cuenta con ese email']);
+    }
+    
+    $auth = wp_authenticate($user->user_login, $password);
+    
+    if (is_wp_error($auth)) {
+        wp_send_json_error(['message' => 'Contraseña incorrecta']);
+    }
+    
+    wp_set_current_user($auth->ID);
+    wp_set_auth_cookie($auth->ID);
+    
+    $redirect = home_url('/perfil');
+    wp_send_json_success(['redirect' => $redirect]);
 }
 
 /**

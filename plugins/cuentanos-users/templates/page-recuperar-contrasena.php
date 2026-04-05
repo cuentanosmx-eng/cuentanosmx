@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('reset-form-container').style.display = 'none';
                 document.getElementById('success-message').style.display = 'block';
             } else {
-                document.getElementById('error-text').textContent = data.message || 'Error al enviar el email';
+                document.getElementById('error-text').textContent = data.data?.message || 'Error al enviar el email';
                 document.getElementById('error-message').style.display = 'block';
             }
         })

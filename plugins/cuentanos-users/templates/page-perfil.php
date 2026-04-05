@@ -92,7 +92,12 @@
     </style>
 </head>
 <body <?php body_class(); ?>>
-<?php wp_body_open(); ?>
+<?php 
+if (!is_user_logged_in()) {
+    wp_redirect(home_url('/mi-cuenta'));
+    exit;
+}
+wp_body_open(); ?>
 
 <div class="cnmx-profile-page">
     <header class="cnmx-profile-header">
