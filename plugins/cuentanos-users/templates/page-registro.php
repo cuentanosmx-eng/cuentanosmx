@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="cnmx-users-page">
-    <a href="<?php echo home_url(); ?>" class="cn mx-back-home">
+    <a href="<?php echo home_url(); ?>" class="cnmx-back-home">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </a>
     
@@ -430,5 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php wp_footer(); ?>
+<link rel="stylesheet" href="<?php echo get_stylesheet_directory_uri(); ?>/css/popups.css">
+<script src="<?php echo get_stylesheet_directory_uri(); ?>/js/popups.js"></script>
 </body>
 </html>

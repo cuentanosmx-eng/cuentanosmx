@@ -11,7 +11,26 @@
         initReviews();
         initSearch();
         initForms();
+        initToastSystem();
     });
+    
+    function initToastSystem() {
+        if (typeof CNMX !== 'undefined' && CNMX.Toast) {
+            CNMX.Toast.init();
+        }
+    }
+    
+    function showToast(type, title, message) {
+        if (typeof cnmxToastSuccess === 'function' && type === 'success') {
+            cnmxToastSuccess(message, title);
+        } else if (typeof cnmxToastError === 'function' && type === 'error') {
+            cnmxToastError(message, title);
+        } else if (typeof CNMX !== 'undefined' && CNMX.Toast) {
+            CNMX.Toast.show({ type: type, title: title, message: message });
+        } else {
+            console.log(title + ': ' + message);
+        }
+    }
     
     // Navbar scroll effect
     function initNavbar() {
@@ -110,22 +129,25 @@
             }
             
             $.ajax({
-                url: cnmxData.restUrl + 'cnmx/v1/resena',
+                url: cnmxData.ajaxUrl,
                 type: 'POST',
                 data: {
+                    action: 'cnmx_guardar_resena',
                     negocio_id: negocioId,
-                    calificacion: rating,
-                    contenido: contenido
+                    rating: rating,
+                    texto: contenido,
+                    nonce: cnmxData.nonce
                 },
-                headers: {
-                    'X-WP-Nonce': cnmxData.nonce
-                },
-                success: function() {
-                    showToast('success', '¡Gracias!', 'Tu reseña ha sido enviada');
-                    $('#review-text').val('');
-                    $('.rating-input .star-btn svg').attr('fill', 'none');
-                    $('#review-form').slideUp();
-                    location.reload();
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', '¡Gracias!', 'Tu reseña ha sido enviada');
+                        $('#review-text').val('');
+                        $('.rating-input .star-btn svg').attr('fill', 'none');
+                        $('#review-form').slideUp();
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showToast('error', 'Error', response.data || 'No se pudo enviar la reseña');
+                    }
                 },
                 error: function() {
                     showToast('error', 'Error', 'No se pudo enviar la reseña');
@@ -221,31 +243,6 @@
                 }
             });
         });
-    }
-    
-    // Toast notification
-    function showToast(type, title, message) {
-        const $container = $('.toast-container');
-        if (!$container.length) {
-            $('body').append('<div class="toast-container"></div>');
-        }
-        
-        const $toast = $('<div class="toast ' + type + '">' +
-            '<span class="toast-icon">' + (type === 'success' ? '✓' : '!') + '</span>' +
-            '<div class="toast-content">' +
-                '<div class="toast-title">' + title + '</div>' +
-                '<div class="toast-message">' + message + '</div>' +
-            '</div>' +
-        '</div>');
-        
-        $('.toast-container').append($toast);
-        
-        setTimeout(function() {
-            $toast.addClass('out');
-            setTimeout(function() {
-                $toast.remove();
-            }, 300);
-        }, 3000);
     }
     
     // Debounce utility

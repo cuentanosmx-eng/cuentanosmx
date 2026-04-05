@@ -391,5 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php wp_footer(); ?>
+<link rel="stylesheet" href="<?php echo get_stylesheet_directory_uri(); ?>/css/popups.css">
+<script src="<?php echo get_stylesheet_directory_uri(); ?>/js/popups.js"></script>
 </body>
 </html>
