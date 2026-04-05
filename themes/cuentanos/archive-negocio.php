@@ -194,7 +194,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 <nav class="navbar">
     <div class="container">
         <a href="<?php echo home_url(); ?>" class="navbar-logo">
-            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx">
+            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-PRINCIPAL.png" alt="Cuentanos.mx">
         </a>
         <div class="navbar-right">
             <?php if (is_user_logged_in()): ?>

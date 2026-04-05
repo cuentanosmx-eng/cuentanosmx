@@ -38,7 +38,7 @@ if (is_user_logged_in()) {
 <nav class="navbar">
     <div class="container">
         <a href="<?php echo home_url(); ?>" class="navbar-logo">
-            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx" class="logo-img">
+            <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-PRINCIPAL.png" alt="Cuentanos.mx" class="logo-img">
         </a>
         
         <div class="navbar-center">
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="footer-grid">
                 <div class="footer-brand">
                     <a href="<?php echo home_url(); ?>" class="footer-logo">
-                        <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-HORIZONTAL.png" alt="Cuentanos.mx" class="footer-logo-img">
+                        <img src="https://cuentanos.mx/wp-content/uploads/2026/04/LOGO-PRINCIPAL.png" alt="Cuentanos.mx" class="footer-logo-img">
                     </a>
                     <p class="footer-brand-desc">El directorio de negocios locales más grande de México. Descubre, evalúa y apoya a los negocios de tu comunidad.</p>
                     <div class="footer-social">
