@@ -7,7 +7,19 @@ if (!defined('ABSPATH')) exit;
 
 class CNMX_Users_Setup {
     
+    public static function activate() {
+        flush_rewrite_rules();
+    }
+    
+    public function maybe_flush_rules() {
+        if (get_option('cnmx_rewrite_flushed') !== '1') {
+            flush_rewrite_rules();
+            update_option('cnmx_rewrite_flushed', '1');
+        }
+    }
+    
     public function __construct() {
+        add_action('init', [$this, 'maybe_flush_rules']);
         add_action('init', [$this, 'register_pages']);
         add_filter('query_vars', [$this, 'add_query_vars']);
         add_action('template_redirect', [$this, 'handle_pages']);

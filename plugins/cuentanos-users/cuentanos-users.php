@@ -22,3 +22,7 @@ new CNMX_Users_Setup();
 new CNMX_Users_Profile();
 new CNMX_Users_REST_API();
 new CNMX_Users_Shortcodes();
+
+register_activation_hook(__FILE__, function() {
+    CNMX_Users_Setup::activate();
+});
