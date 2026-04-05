@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const negocioId = this.dataset.negocio;
         
         if (!rating || !contenido) {
-            alert('Por favor selecciona una calificación y escribe tu reseña.');
+            cnmxToastError('Selecciona una calificación y escribe tu reseña');
             return;
         }
         
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 location.reload();
             } else {
-                alert('Error al guardar la reseña');
+                cnmxToastError('Error al guardar la reseña');
             }
         });
     });

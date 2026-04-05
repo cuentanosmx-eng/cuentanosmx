@@ -1,0 +1,227 @@
+/* ========================================
+   CNMX Popup System - Airbnb Style
+   ======================================== */
+
+.cnmx-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.cnmx-toast {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 400px;
+    pointer-events: auto;
+    animation: cnmx-slide-in 0.3s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.cnmx-toast.success {
+    border-left: 4px solid #10B981;
+}
+
+.cnmx-toast.error {
+    border-left: 4px solid #EF4444;
+}
+
+.cnmx-toast.info {
+    border-left: 4px solid #3B82F6;
+}
+
+.cnmx-toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.cnmx-toast-content {
+    flex: 1;
+}
+
+.cnmx-toast-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.cnmx-toast-message {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.cnmx-toast-close {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #9CA3AF;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.cnmx-toast-close:hover {
+    color: #374151;
+}
+
+/* Modal Overlay */
+.cnmx-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.cnmx-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cnmx-modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.cnmx-modal-overlay.active .cnmx-modal {
+    transform: scale(1) translateY(0);
+}
+
+.cnmx-modal-header {
+    padding: 24px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cnmx-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.cnmx-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F3F4F6;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+    transition: all 0.2s;
+}
+
+.cnmx-modal-close:hover {
+    background: #E5E7EB;
+    color: #374151;
+}
+
+.cnmx-modal-body {
+    padding: 24px;
+}
+
+.cnmx-modal-footer {
+    padding: 0 24px 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.cnmx-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-family: inherit;
+}
+
+.cnmx-btn-primary {
+    background: #EB510C;
+    color: white;
+}
+
+.cnmx-btn-primary:hover {
+    background: #D44A0B;
+}
+
+.cnmx-btn-secondary {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.cnmx-btn-secondary:hover {
+    background: #E5E7EB;
+}
+
+@keyframes cnmx-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes cnmx-fade-out {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.cnmx-toast.hiding {
+    animation: cnmx-fade-out 0.3s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .cnmx-toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+    
+    .cnmx-toast {
+        min-width: auto;
+        max-width: none;
+    }
+}

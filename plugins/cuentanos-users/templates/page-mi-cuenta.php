@@ -379,12 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 window.location.href = data.data?.redirect || '<?php echo home_url('/perfil'); ?>';
             } else {
-                alert(data.data?.message || 'Error al iniciar sesión');
+                cnmxToastError(data.data?.message || 'Error al iniciar sesión');
             }
         })
         .catch(err => {
             form.classList.remove('loading');
-            alert('Error de conexión');
+            cnmxToastError('Error de conexión');
         });
     });
 });

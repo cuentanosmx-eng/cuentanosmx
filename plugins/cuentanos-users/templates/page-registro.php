@@ -418,12 +418,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 window.location.href = data.data?.redirect || '<?php echo home_url('/perfil'); ?>';
             } else {
-                alert(data.data || 'Error al crear cuenta');
+                cnmxToastError(data.data || 'Error al crear cuenta');
             }
         })
         .catch(err => {
             form.classList.remove('loading');
-            alert('Error de conexión');
+            cnmxToastError('Error de conexión');
         });
     });
 });

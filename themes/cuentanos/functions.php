@@ -10,6 +10,12 @@ define('CNMX_VERSION', '1.0.0');
 define('CNMX_PATH', get_stylesheet_directory());
 define('CNMX_URL', get_stylesheet_directory_uri());
 
+// Quitar barra de admin de WordPress para todos excepto admins
+add_filter('show_admin_bar', function($show) {
+    if (current_user_can('administrator')) return true;
+    return false;
+});
+
 /**
  * Enqueue Scripts and Styles
  */
@@ -66,6 +72,21 @@ function cnmx_enqueue_scripts() {
             'cnmx-app',
             CNMX_URL . '/js/app.js',
             array('jquery'),
+            CNMX_VERSION,
+            true
+        );
+        
+        // Popups CSS & JS
+        wp_enqueue_style(
+            'cnmx-popups',
+            CNMX_URL . '/css/popups.css',
+            array(),
+            CNMX_VERSION
+        );
+        wp_enqueue_script(
+            'cnmx-popups',
+            CNMX_URL . '/js/popups.js',
+            array(),
             CNMX_VERSION,
             true
         );
