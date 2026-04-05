@@ -836,6 +836,7 @@ add_action('rest_api_init', function() {
             
             // Add megafonos
             cnmx_add_megafonos($user_id, 10, 'Escribiste una reseña');
+            cnmx_check_achievements($user_id);
             
             return new WP_REST_Response(array('success' => true), 200);
         }
@@ -922,6 +923,50 @@ function cnmx_add_megafonos($user_id, $puntos, $descripcion) {
 }
 
 /**
+ * Check and award achievements
+ */
+function cnmx_check_achievements($user_id) {
+    $logros = get_posts([
+        'post_type' => 'cnmx_logro',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+    ]);
+    
+    global $wpdb;
+    
+    foreach ($logros as $logro) {
+        $already_has = get_user_meta($user_id, 'cnmx_logro_' . $logro->ID, true);
+        if ($already_has) continue;
+        
+        $check = false;
+        $title = sanitize_title($logro->post_title);
+        
+        switch ($title) {
+            case 'primera-resena':
+                $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_resenas WHERE user_id = %d", $user_id));
+                $check = $count >= 1;
+                break;
+            case 'explorador':
+                $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d", $user_id));
+                $check = $count >= 5;
+                break;
+            case 'critico':
+                $count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}cnmx_resenas WHERE user_id = %d", $user_id));
+                $check = $count >= 10;
+                break;
+        }
+        
+        if ($check) {
+            $megafonos_bonus = get_post_meta($logro->ID, 'cnmx_logro_megafonos', true) ?: 0;
+            update_user_meta($user_id, 'cnmx_logro_' . $logro->ID, date('Y-m-d H:i:s'));
+            if ($megafonos_bonus > 0) {
+                cnmx_add_megafonos($user_id, $megafonos_bonus, 'Desbloqueaste logro: ' . $logro->post_title);
+            }
+        }
+    }
+}
+
+/**
  * AJAX Handlers
  */
 add_action('wp_ajax_cnmx_favorito', 'cnmx_ajax_favorito');
@@ -961,6 +1006,7 @@ function cnmx_ajax_favorito() {
             'negocio_id' => $negocio_id,
         ));
         cnmx_add_megafonos($user_id, 5, 'Agregaste a favoritos');
+        cnmx_check_achievements($user_id);
         wp_send_json_success(array('action' => 'added'));
     }
 }
