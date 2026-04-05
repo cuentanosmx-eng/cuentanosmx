@@ -917,7 +917,7 @@ function cnmx_ajax_register() {
     
     $email = sanitize_email($_POST['email']);
     $password = $_POST['password'];
-    $name = sanitize_text_field($_POST['name']);
+    $name = sanitize_text_field($_POST['nombre'] ?? $_POST['name'] ?? 'Usuario');
     
     if (email_exists($email)) {
         wp_send_json_error('El email ya está registrado');

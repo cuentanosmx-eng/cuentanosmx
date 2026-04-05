@@ -48,6 +48,7 @@
             </div>
             
             <form id="cnmx-user-register-form" class="cnmx-auth-form">
+                <input type="hidden" name="nonce" value="<?php echo wp_create_nonce('cnmx_nonce'); ?>">
                 <div class="cnmx-form-group">
                     <input type="text" name="nombre" required placeholder="Nombre completo">
                 </div>
