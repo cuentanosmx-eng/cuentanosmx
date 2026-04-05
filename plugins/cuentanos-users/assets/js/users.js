@@ -242,11 +242,17 @@
         },
 
         showToast(type, title, message) {
-            if (!window.CNMX || !window.CNMX.showToast) {
-                alert(title + ': ' + message);
-                return;
+            // Try different toast implementations
+            if (window.cnmxToast) {
+                window.cnmxToast({ type: type, title: title, message: message });
+            } else if (window.CNMX && window.CNMX.showToast) {
+                window.CNMX.showToast(type, title, message);
+            } else if (window.CNMX && window.CNMX.Toast && window.CNMX.Toast.show) {
+                window.CNMX.Toast.show({ type: type, title: title, message: message });
+            } else {
+                // Fallback to browser alert only as last resort
+                console.log(title + ': ' + message);
             }
-            window.CNMX.showToast(type, title, message);
         },
 
         async loadRecompensas() {
