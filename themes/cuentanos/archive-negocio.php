@@ -27,10 +27,14 @@ $negocios = new WP_Query($args);
 $categories = get_terms(['taxonomy' => 'categoria', 'hide_empty' => true]);
 
 $user_megafonos = 0;
+$user_favorites = [];
 if (is_user_logged_in()) {
     global $wpdb;
     $meta = $wpdb->get_row($wpdb->prepare("SELECT megafonos FROM {$wpdb->prefix}cnmx_usuarios_meta WHERE user_id = %d", get_current_user_id()));
     $user_megafonos = $meta ? $meta->megafonos : 0;
+    
+    $favs = $wpdb->get_col($wpdb->prepare("SELECT negocio_id FROM {$wpdb->prefix}cnmx_favoritos WHERE user_id = %d", get_current_user_id()));
+    $user_favorites = array_map('intval', $favs);
 }
 ?>
 <!DOCTYPE html>
@@ -311,12 +315,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                         $imagen = get_the_post_thumbnail_url(get_the_ID(), 'cnmx-card') ?: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&h=400&fit=crop';
                         $cats = get_the_terms(get_the_ID(), 'categoria');
                         $categoria_nombre = $cats ? $cats[0]->name : 'General';
+                        $is_fav = in_array(get_the_ID(), $user_favorites);
                     ?>
                         <a href="<?php the_permalink(); ?>" class="business-card">
                             <div class="business-img">
                                 <img src="<?php echo esc_url($imagen); ?>" alt="<?php the_title_attribute(); ?>">
-                                <button class="business-fav" data-id="<?php the_ID(); ?>">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                <button class="business-fav<?php echo $is_fav ? ' active' : ''; ?>" data-id="<?php the_ID(); ?>">
+                                    <svg viewBox="0 0 24 24" fill="<?php echo $is_fav ? 'currentColor' : 'none'; ?>" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                 </button>
                             </div>
                             <div class="business-content">

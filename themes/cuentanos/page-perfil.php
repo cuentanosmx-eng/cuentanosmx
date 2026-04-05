@@ -26,11 +26,14 @@ $meta = $wpdb->get_row($wpdb->prepare("SELECT * FROM $meta_table WHERE user_id =
 $megafonos = $meta ? $meta->megafonos : 0;
 $nivel_actual = $meta ? $meta->nivel : 'explorador';
 
-// Get user achievements/logros
-$user_logros = $wpdb->get_col($wpdb->prepare(
-    "SELECT logro_id FROM {$wpdb->prefix}cnmx_usuarios_logros WHERE user_id = %d",
-    $user_id
-));
+// Get user achievements from user meta (same as REST API)
+$user_logros = [];
+$logros_posts = get_posts(['post_type' => 'cnmx_logro', 'post_status' => 'publish', 'posts_per_page' => -1]);
+foreach ($logros_posts as $l) {
+    if (get_user_meta($user_id, 'cnmx_logro_' . $l->ID, true)) {
+        $user_logros[] = $l->ID;
+    }
+}
 
 // Get user rewards
 $user_recompensas = $wpdb->get_results($wpdb->prepare(
@@ -78,13 +81,6 @@ $recompensas_posts = get_posts([
     'posts_per_page' => -1,
     'orderby' => 'meta_value_num',
     'meta_key' => 'cnmx_recompensa_megafonos',
-]);
-
-// Get all logros from CPT
-$logros_posts = get_posts([
-    'post_type' => 'cnmx_logro',
-    'post_status' => 'publish',
-    'posts_per_page' => -1,
 ]);
 
 // Get user reviews from custom table
